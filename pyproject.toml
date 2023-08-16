@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "podmaker"
+version = "0.1.0"
+description = ""
+authors = ["YogiLiu <YogiLiu@outlook.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+boto3 = "^1.28.27"
+python-dotenv = "^1.0.0"
+yt-dlp = "^2023.7.6"
+
+
+[tool.poetry.group.dev.dependencies]
+boto3-stubs = {extras = ["essential"], version = "^1.28.27"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
