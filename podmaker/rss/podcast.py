@@ -7,8 +7,7 @@ from xml.etree.ElementTree import Element
 from podmaker.rss.episode import Episode
 from podmaker.rss.core import Resource, RSSSerializer
 
-
-category_pattern = re.compile(r'^[\w ]+$')
+category_pattern = re.compile(r'^[\w &]+$')
 
 
 @dataclass
@@ -111,6 +110,12 @@ class Podcast(RSSSerializer):
             if category is not None:
                 yield Element('itunes:category', text=category)
 
+    @staticmethod
+    def parse_category(category: str) -> str | None:
+        if not category_pattern.match(category):
+            return None
+        return category.replace('&', '&amp;')
+
     @property
     def explicit_element(self) -> Element:
         return Element('itunes:explicit', text='yes' if self.explicit else 'no')
@@ -118,9 +123,3 @@ class Podcast(RSSSerializer):
     @property
     def language_element(self) -> Element:
         return Element('language', text=self.language)
-
-    @staticmethod
-    def parse_category(category: str) -> str | None:
-        if not category_pattern.match(category):
-            return None
-        return category
