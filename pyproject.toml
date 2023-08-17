@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "podmaker"
 version = "0.1.0"
-description = ""
+description = "Turn YouTube playlist into podcast feeds ."
 authors = ["YogiLiu <YogiLiu@outlook.com>"]
 readme = "README.md"
 
