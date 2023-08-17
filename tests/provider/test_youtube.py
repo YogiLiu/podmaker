@@ -43,7 +43,7 @@ class TestYoutube(unittest.TestCase):
         podcast = self.youtube.fetch(self.uri)
         self.assertEqual(podcast.link, self.uri.geturl())
         self.assertEqual(podcast.title, 'Introduction to ARCore Augmented Faces')
-        self.assertIsNotNone(podcast.image.get())
+        self.assertIsNotNone(podcast.image.ensure())
         self.assertEqual(
             podcast.description,
             'Learn how to use ARCore’s Augmented Faces APIs to create face effects with Unity, Android, and iOS.'
@@ -62,5 +62,5 @@ class TestYoutube(unittest.TestCase):
             self.assertEqual(episode.guid, test_case[0])
             self.assertEqual(episode.title, test_case[1])
             self.assertEqual(episode.pub_date.date(), test_case[2])
-            self.assertIsNotNone(podcast.image.get())
-            self.assertEqual(episode.enclosure.get().url, urlparse('https://example.com'))
+            self.assertIsNotNone(podcast.image.ensure())
+            self.assertEqual(episode.enclosure.ensure().url, urlparse('https://example.com'))

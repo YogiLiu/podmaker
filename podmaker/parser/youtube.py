@@ -1,7 +1,7 @@
 import logging
 import os
 from collections.abc import Generator
-from datetime import datetime
+from datetime import datetime, timedelta
 from tempfile import TemporaryDirectory
 from urllib.parse import ParseResult, urlparse
 
@@ -66,7 +66,7 @@ class YouTube(Parser):
                     title=video_info['title'],
                     description=video_info['description'],
                     guid=video_info['id'],
-                    duration=video_info['duration'],
+                    duration=timedelta(seconds=video_info['duration']),
                     pub_date=upload_at,
                 )
 
