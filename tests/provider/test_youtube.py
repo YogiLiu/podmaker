@@ -1,26 +1,29 @@
+import os
 import unittest
 from datetime import date
 from typing import IO
-from urllib.parse import urlparse
+from urllib.parse import urlparse, ParseResult
 
 from podmaker.parser import YouTube
-from podmaker.storage import Storage
+from podmaker.rss import Episode
+from podmaker.storage import Storage, ObjectInfo
 
 
 class MockStorage(Storage):
     cnt = 0
 
-    def put(self, data: IO, key: str, *, content_type: str = '') -> str:
+    def put(self, data: IO, key: str, *, content_type: str = '') -> ParseResult:
         assert data.name.endswith('.mp3'), 'only mp3 is supported'
         assert self.cnt % 2 == 1, 'file already exists'
-        return self.get_uri(key)
+        return urlparse('https://example.com')
 
-    def check(self, key: str) -> bool:
+    def check(self, key: str) -> ObjectInfo:
         self.cnt += 1
-        return self.cnt % 2 == 0
-
-    def get_uri(self, key: str) -> str:
-        return 'https://example.com'
+        return ObjectInfo(
+            uri=urlparse('https://example.com'),
+            size=0,
+            type='audio/mp3'
+        )
 
 
 class TestYoutube(unittest.TestCase):
@@ -37,15 +40,27 @@ class TestYoutube(unittest.TestCase):
         self.youtube = YouTube(storage)
 
     def test_fetch(self):
-        info = self.youtube.fetch(self.uri)
-        self.assertEqual(info.author, 'Google for Developers')
-        self.assertIsNotNone(info.thumbnail.get())
-        for (idx, item) in enumerate(info.items):
+        podcast = self.youtube.fetch(self.uri)
+        self.assertEqual(podcast.link, self.uri.geturl())
+        self.assertEqual(podcast.title, 'Introduction to ARCore Augmented Faces')
+        self.assertIsNotNone(podcast.image.get())
+        self.assertEqual(
+            podcast.description,
+            'Learn how to use ARCore’s Augmented Faces APIs to create face effects with Unity, Android, and iOS.'
+        )
+        self.assertEqual(podcast.owner, os.getenv('PD_OWNER', 'Podmaker'))
+        self.assertEqual(podcast.author, 'Google for Developers')
+        self.assertEqual(podcast.categories, [])
+        self.assertFalse(podcast.explicit)
+        self.assertIsNone(podcast.language)
+        for (idx, episode) in enumerate(podcast.items):
+            idx: int
+            episode: Episode
             if idx >= len(self.test_cases):
                 break
             test_case = self.test_cases[idx]
-            self.assertEqual(item.id, test_case[0])
-            self.assertEqual(item.title, test_case[1])
-            self.assertEqual(item.upload_at, test_case[2])
-            self.assertIsNotNone(info.thumbnail.get())
-            self.assertEqual(item.audio.get(), urlparse('https://example.com'))
+            self.assertEqual(episode.guid, test_case[0])
+            self.assertEqual(episode.title, test_case[1])
+            self.assertEqual(episode.pub_date.date(), test_case[2])
+            self.assertIsNotNone(podcast.image.get())
+            self.assertEqual(episode.enclosure.get().url, urlparse('https://example.com'))
