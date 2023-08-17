@@ -1,3 +1,4 @@
+import os
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass, field
@@ -8,6 +9,12 @@ from podmaker.rss.episode import Episode
 from podmaker.rss.core import Resource, RSSSerializer
 
 category_pattern = re.compile(r'^[\w &]+$')
+
+
+@dataclass
+class Owner:
+    name: str
+    email: str
 
 
 @dataclass
@@ -23,7 +30,7 @@ class Podcast(RSSSerializer):
     # A plaintext description of the podcast.
     description: str
     # Manager's email for the podcast.
-    owner: str
+    owner: Owner
     # Text name(s) of the author(s) of this podcast.
     # This need not be the same as the owner value.
     author: str
@@ -95,8 +102,8 @@ class Podcast(RSSSerializer):
     @property
     def owner_element(self) -> Element:
         el = Element('itunes:owner')
-        el.append(Element('itunes:name', text=self.owner))
-        el.append(Element('itunes:email', text=self.owner))
+        el.append(Element('itunes:name', text=self.owner.name))
+        el.append(Element('itunes:email', text=self.owner.email))
         return el
 
     @property

@@ -8,8 +8,8 @@ from urllib.parse import urlparse
 import boto3
 from botocore.exceptions import ClientError
 
+from podmaker.config import S3Config, PMConfig
 from podmaker.storage import S3
-
 
 file_size = 10
 
@@ -47,13 +47,15 @@ def mock_resource(*args, **kwargs):
 class TestS3(unittest.TestCase):
     @patch.object(boto3, 'resource', mock_resource)
     def setUp(self) -> None:
-        self.s3 = S3(
-            endpoint='http://localhost:9000',
-            cdn_prefix='http://localhost:9000',
-            bucket='podmaker',
-            access_key='123',
-            access_secret='456',
-        )
+        s3_config = S3Config(
+                access_key='123',
+                access_secret='456',
+                bucket='podmaker',
+                endpoint='http://localhost:9000',
+                cdn_prefix='http://localhost:9000'
+            )
+        config = PMConfig(s3=s3_config)
+        self.s3 = S3(config)
         self.file = BytesIO()
         self.file.write(random.randbytes(file_size))
         self.file.seek(0)

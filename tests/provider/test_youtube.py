@@ -4,6 +4,7 @@ from datetime import date
 from typing import IO
 from urllib.parse import urlparse, ParseResult
 
+from podmaker.config import PMConfig, OwnerConfig
 from podmaker.parser import YouTube
 from podmaker.rss import Episode
 from podmaker.storage import Storage, ObjectInfo
@@ -37,7 +38,8 @@ class TestYoutube(unittest.TestCase):
 
     def setUp(self) -> None:
         storage = MockStorage()
-        self.youtube = YouTube(storage)
+        owner_config = OwnerConfig(name='Podmaker', email='test@podmaker.dev')
+        self.youtube = YouTube(storage, PMConfig(owner=owner_config))
 
     def test_fetch(self):
         podcast = self.youtube.fetch(self.uri)
@@ -48,7 +50,8 @@ class TestYoutube(unittest.TestCase):
             podcast.description,
             'Learn how to use ARCore’s Augmented Faces APIs to create face effects with Unity, Android, and iOS.'
         )
-        self.assertEqual(podcast.owner, os.getenv('PD_OWNER', 'Podmaker'))
+        self.assertEqual(podcast.owner.name, 'Podmaker')
+        self.assertEqual(podcast.owner.email, 'test@podmaker.dev')
         self.assertEqual(podcast.author, 'Google for Developers')
         self.assertEqual(podcast.categories, [])
         self.assertFalse(podcast.explicit)
