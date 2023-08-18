@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 import boto3
 from botocore.exceptions import ClientError
 
-from podmaker.config import S3Config, PMConfig
+from podmaker.env import S3Env, PMEnv, OwnerEnv
 from podmaker.storage import S3
 
 file_size = 10
@@ -23,7 +23,7 @@ class MockedObject:
 # noinspection PyPep8Naming
 class MockedBucket:
     @staticmethod
-    def put_object(*, Key, ContentMD5, Body, ContentType):
+    def put_object(*, Key, **__):
         return urlparse(f'http://localhost:9000/{Key}')
 
     @staticmethod
@@ -36,26 +36,29 @@ class MockedBucket:
 # noinspection PyPep8Naming
 class MockedServiceResource:
     @staticmethod
-    def Bucket(*args, **kwargs):
+    def Bucket(*_, **__):
         return MockedBucket()
 
 
-def mock_resource(*args, **kwargs):
+def mock_resource(*_, **__):
     return MockedServiceResource
 
 
 class TestS3(unittest.TestCase):
     @patch.object(boto3, 'resource', mock_resource)
     def setUp(self) -> None:
-        s3_config = S3Config(
-                access_key='123',
-                access_secret='456',
-                bucket='podmaker',
-                endpoint='http://localhost:9000',
-                cdn_prefix='http://localhost:9000'
+        self.s3 = S3(
+            PMEnv(
+                s3=S3Env(
+                    access_key='123',
+                    access_secret='456',
+                    bucket='podmaker',
+                    endpoint='http://localhost:9000',
+                    cdn_prefix='http://localhost:9000'
+                ),
+                owner=OwnerEnv(name='test', email='test@test')
             )
-        config = PMConfig(s3=s3_config)
-        self.s3 = S3(config)
+        )
         self.file = BytesIO()
         self.file.write(random.randbytes(file_size))
         self.file.seek(0)

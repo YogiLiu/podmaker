@@ -1,13 +1,13 @@
-import os
 import unittest
 from datetime import date
 from typing import IO
 from urllib.parse import urlparse, ParseResult
 
-from podmaker.config import PMConfig, OwnerConfig
+from podmaker.env import PMEnv, OwnerEnv, S3Env
 from podmaker.parser import YouTube
 from podmaker.rss import Episode
 from podmaker.storage import Storage, ObjectInfo
+from tests.util import network_available
 
 
 class MockStorage(Storage):
@@ -27,6 +27,7 @@ class MockStorage(Storage):
         )
 
 
+@unittest.skipUnless(network_available('https://www.youtube.com'), 'network is not available')
 class TestYoutube(unittest.TestCase):
     uri = urlparse('https://www.youtube.com/playlist?list=PLOU2XLYxmsILHvpAkROp2dXz-jQi4S4_y')
 
@@ -38,8 +39,19 @@ class TestYoutube(unittest.TestCase):
 
     def setUp(self) -> None:
         storage = MockStorage()
-        owner_config = OwnerConfig(name='Podmaker', email='test@podmaker.dev')
-        self.youtube = YouTube(storage, PMConfig(owner=owner_config))
+        self.youtube = YouTube(
+            storage,
+            PMEnv(
+                owner=OwnerEnv(name='Podmaker', email='test@podmaker.dev'),
+                s3=S3Env(
+                    access_key='123',
+                    access_secret='456',
+                    bucket='podmaker',
+                    endpoint='http://localhost:9000',
+                    cdn_prefix='http://localhost:9000'
+                )
+            )
+        )
 
     def test_fetch(self):
         podcast = self.youtube.fetch(self.uri)

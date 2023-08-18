@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 from collections.abc import Generator
@@ -7,7 +9,7 @@ from urllib.parse import ParseResult, urlparse
 
 import yt_dlp
 
-from podmaker.config import PMConfig
+from podmaker.env import PMEnv
 from podmaker.parser.core import Parser, Podcast
 from podmaker.rss import Episode, Resource, Enclosure
 from podmaker.rss.podcast import Owner
@@ -32,10 +34,10 @@ class NoneLogger:
 
 
 class YouTube(Parser):
-    def __init__(self, storage: Storage, config: PMConfig):
+    def __init__(self, storage: Storage, env: PMEnv):
         self.storage = storage
         self.ydl_opts = {'logger': NoneLogger()}
-        self.config = config
+        self.env = env
 
     def fetch(self, uri: ParseResult) -> Podcast:
         if uri.path == "/playlist":
@@ -52,7 +54,7 @@ class YouTube(Parser):
                 title=playlist['title'],
                 image=PlaylistThumbnail(playlist['thumbnails']),
                 description=playlist['description'],
-                owner=Owner(name=self.config.owner.name, email=self.config.owner.email),
+                owner=Owner(name=self.env.owner.name, email=self.env.owner.email),
                 author=playlist['uploader'],
                 categories=playlist.get('tags', []),
             )

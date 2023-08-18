@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABCMeta, abstractmethod
 from typing import TypeVar, Generic
 from xml.etree.ElementTree import Element, tostring
