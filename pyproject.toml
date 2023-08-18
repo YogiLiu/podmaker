@@ -8,11 +8,12 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.9"
 boto3 = "^1.28.27"
-python-dotenv = "^1.0.0"
 yt-dlp = "^2023.7.6"
+tomlkit = "^0.12.1"
+pydantic = {extras = ["email"], version = "^2.2.0"}
 
 [tool.poetry.group.dev.dependencies]
-boto3-stubs = {extras = ["essential"], version = "^1.28.27"}
+boto3-stubs = { extras = ["essential"], version = "^1.28.27" }
 autohooks = "^23.7.0"
 autohooks-plugin-ruff = "^23.6.1"
 autohooks-plugin-mypy = "^23.3.0"
@@ -29,6 +30,9 @@ line-length = 120
 [tool.mypy]
 python_version = "3.9"
 strict = true
+plugins = [
+    "pydantic.mypy"
+]
 
 [[tool.mypy.overrides]]
 module = "yt_dlp"

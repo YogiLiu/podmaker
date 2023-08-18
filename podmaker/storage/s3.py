@@ -9,7 +9,7 @@ from urllib.parse import ParseResult, urlparse
 import boto3
 from botocore.exceptions import ClientError
 
-from podmaker.env import PMEnv
+from podmaker.config import PMConfig
 from podmaker.storage import ObjectInfo, Storage
 
 logger = logging.getLogger(__name__)
@@ -18,13 +18,12 @@ logger = logging.getLogger(__name__)
 class S3(Storage):
     _md5_chunk_size = 1024 * 1024
 
-    def __init__(self, env: PMEnv):
-        s3_env = env.s3
+    def __init__(self, config: PMConfig):
         self.s3 = boto3.resource(
-            's3', endpoint_url=s3_env.endpoint, aws_access_key_id=s3_env.access_key,
-            aws_secret_access_key=s3_env.access_secret)
-        self.bucket = self.s3.Bucket(s3_env.bucket)
-        self.cdn_prefix = s3_env.cdn_prefix
+            's3', endpoint_url=str(config.s3.endpoint), aws_access_key_id=config.s3.access_key,
+            aws_secret_access_key=config.s3.access_secret)
+        self.bucket = self.s3.Bucket(config.s3.bucket)
+        self.cdn_prefix = str(config.s3.cdn_prefix)
 
     def _calculate_md5(self, data: IO[AnyStr]) -> str:
         md5 = hashlib.md5()

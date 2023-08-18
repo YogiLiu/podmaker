@@ -9,7 +9,7 @@ from urllib.parse import ParseResult, urlparse
 import boto3
 from botocore.exceptions import ClientError
 
-from podmaker.env import OwnerEnv, PMEnv, S3Env
+from podmaker.config import OwnerConfig, PMConfig, S3Config
 from podmaker.storage import S3
 
 file_size = 10
@@ -49,15 +49,15 @@ class TestS3(unittest.TestCase):
     @patch.object(boto3, 'resource', mock_resource)
     def setUp(self) -> None:
         self.s3 = S3(
-            PMEnv(
-                s3=S3Env(
+            PMConfig(
+                s3=S3Config(
                     access_key='123',
                     access_secret='456',
                     bucket='podmaker',
                     endpoint='http://localhost:9000',
                     cdn_prefix='http://localhost:9000'
                 ),
-                owner=OwnerEnv(name='test', email='test@test')
+                owner=OwnerConfig(name='test', email='test@test.dev')
             )
         )
         self.file = BytesIO()
