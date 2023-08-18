@@ -3,14 +3,14 @@ from __future__ import annotations
 import base64
 import hashlib
 import logging
-from typing import IO
-from urllib.parse import urlparse, ParseResult
+from typing import IO, AnyStr
+from urllib.parse import ParseResult, urlparse
 
 import boto3
 from botocore.exceptions import ClientError
 
 from podmaker.env import PMEnv
-from podmaker.storage.core import Storage, ObjectInfo
+from podmaker.storage import ObjectInfo, Storage
 
 logger = logging.getLogger(__name__)
 
@@ -26,17 +26,22 @@ class S3(Storage):
         self.bucket = self.s3.Bucket(s3_env.bucket)
         self.cdn_prefix = s3_env.cdn_prefix
 
-    def _calculate_md5(self, data: IO) -> str:
+    def _calculate_md5(self, data: IO[AnyStr]) -> str:
         md5 = hashlib.md5()
         while True:
             chunk = data.read(self._md5_chunk_size)
             if not chunk:
                 break
-            md5.update(chunk)
+            if isinstance(chunk, str):
+                md5.update(chunk.encode())
+            elif isinstance(chunk, bytes):
+                md5.update(chunk)
+            else:
+                raise TypeError(f'chunk must be str or bytes, not {type(chunk)}')
         data.seek(0)
         return base64.b64encode(md5.digest()).decode()
 
-    def put(self, data: IO, key, *, content_type: str = '') -> ParseResult:
+    def put(self, data: IO[AnyStr], key: str, *, content_type: str = '') -> ParseResult:
         if key.startswith('/'):
             key = key[1:]
         md5 = self._calculate_md5(data)

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from urllib.parse import ParseResult
 from xml.etree.ElementTree import Element
 
-from podmaker.rss.core import RSSGenerator
+from podmaker.rss import RSSGenerator
 
 
 @dataclass

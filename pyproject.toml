@@ -21,6 +21,19 @@ autohooks-plugin-mypy = "^23.3.0"
 mode = "poetry"
 pre-commit = ["autohooks.plugins.mypy", "autohooks.plugins.ruff"]
 
+[tool.ruff]
+select = ["C90", "F", "I", "PL"]
+target-version = "py39"
+line-length = 120
+
+[tool.mypy]
+python_version = "3.9"
+strict = true
+
+[[tool.mypy.overrides]]
+module = "yt_dlp"
+ignore_missing_imports = true
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

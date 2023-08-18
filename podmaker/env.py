@@ -5,7 +5,6 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
-
 # use to convert environment variables to python types or validate them
 _Validator = Callable[[str], Any]
 
@@ -30,7 +29,6 @@ class _EnvFactory:
     def validate(self, value: str) -> Any:
         if isinstance(self.validators, list):
             for validator in self.validators:
-                validator: _Validator
                 v = validator(value)
                 if v is not None:
                     value = v

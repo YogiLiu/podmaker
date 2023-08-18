@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import IO
+from typing import IO, AnyStr
 from urllib.parse import ParseResult
 
 
@@ -18,7 +18,7 @@ class ObjectInfo:
 
 class Storage(ABC):
     @abstractmethod
-    def put(self, data: IO, key: str, *, content_type: str = '') -> ParseResult:
+    def put(self, data: IO[AnyStr], key: str, *, content_type: str = '') -> ParseResult:
         """
         :return: data uri
         """

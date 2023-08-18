@@ -1,19 +1,18 @@
 import unittest
 from datetime import date
-from typing import IO
-from urllib.parse import urlparse, ParseResult
+from typing import IO, AnyStr
+from urllib.parse import ParseResult, urlparse
 
-from podmaker.env import PMEnv, OwnerEnv, S3Env
+from podmaker.env import OwnerEnv, PMEnv, S3Env
 from podmaker.parser import YouTube
-from podmaker.rss import Episode
-from podmaker.storage import Storage, ObjectInfo
+from podmaker.storage import ObjectInfo, Storage
 from tests.util import network_available
 
 
 class MockStorage(Storage):
     cnt = 0
 
-    def put(self, data: IO, key: str, *, content_type: str = '') -> ParseResult:
+    def put(self, data: IO[AnyStr], key: str, *, content_type: str = '') -> ParseResult:
         assert data.name.endswith('.mp3'), 'only mp3 is supported'
         assert self.cnt % 2 == 1, 'file already exists'
         return urlparse('https://example.com')
@@ -53,7 +52,7 @@ class TestYoutube(unittest.TestCase):
             )
         )
 
-    def test_fetch(self):
+    def test_fetch(self) -> None:
         podcast = self.youtube.fetch(self.uri)
         self.assertEqual(podcast.link, self.uri.geturl())
         self.assertEqual(podcast.title, 'Introduction to ARCore Augmented Faces')
@@ -69,13 +68,13 @@ class TestYoutube(unittest.TestCase):
         self.assertFalse(podcast.explicit)
         self.assertIsNone(podcast.language)
         for (idx, episode) in enumerate(podcast.items):
-            idx: int
-            episode: Episode
             if idx >= len(self.test_cases):
                 break
             test_case = self.test_cases[idx]
             self.assertEqual(episode.guid, test_case[0])
             self.assertEqual(episode.title, test_case[1])
-            self.assertEqual(episode.pub_date.date(), test_case[2])
+            self.assertIsNotNone(episode.pub_date)
+            if episode.pub_date is not None:
+                self.assertEqual(episode.pub_date.date(), test_case[2])
             self.assertIsNotNone(podcast.image.ensure())
             self.assertEqual(episode.enclosure.ensure().url, urlparse('https://example.com'))

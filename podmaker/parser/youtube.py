@@ -5,31 +5,30 @@ import os
 from collections.abc import Generator
 from datetime import datetime, timedelta
 from tempfile import TemporaryDirectory
+from typing import Any
 from urllib.parse import ParseResult, urlparse
 
 import yt_dlp
 
 from podmaker.env import PMEnv
-from podmaker.parser.core import Parser, Podcast
-from podmaker.rss import Episode, Resource, Enclosure
-from podmaker.rss.podcast import Owner
+from podmaker.parser import Parser
+from podmaker.rss import Enclosure, Episode, Owner, Podcast, Resource
 from podmaker.storage import Storage
-
 
 logger = logging.getLogger(__name__)
 
 
 class NoneLogger:
-    def debug(self, msg):
+    def debug(self, msg: Any) -> None:
         pass
 
-    def info(self, msg):
+    def info(self, msg: Any) -> None:
         pass
 
-    def warning(self, msg):
+    def warning(self, msg: Any) -> None:
         pass
 
-    def error(self, msg):
+    def error(self, msg: Any) -> None:
         pass
 
 
@@ -60,7 +59,7 @@ class YouTube(Parser):
             )
         return podcast
 
-    def fetch_item(self, entries: Generator) -> Generator[Episode, None, None]:
+    def fetch_item(self, entries: Generator[dict[str, Any], None, None]) -> Generator[Episode, None, None]:
         with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
             for entry in entries:
                 video_info = ydl.extract_info(entry['url'], download=False)
@@ -76,25 +75,26 @@ class YouTube(Parser):
                 )
 
 
-class PlaylistThumbnail(Resource):
-    def __init__(self, thumbnails: list[dict]):
+class PlaylistThumbnail(Resource[ParseResult]):
+    def __init__(self, thumbnails: list[dict[str, Any]]):
         self.thumbnails = thumbnails
 
     def get(self) -> ParseResult | None:
         if len(self.thumbnails) == 0:
             return None
         thumbnail = max(self.thumbnails, key=lambda t: t['width'])
-        return urlparse(thumbnail['url'])
+        result: ParseResult = urlparse(thumbnail['url'])
+        return result
 
 
-class Audio(Resource):
+class Audio(Resource[Enclosure]):
     uri: ParseResult | None = None
     timeout = 30
     max_retries = 3
 
-    def __init__(self, info: dict, ydl_opts: dict, storage: Storage):
+    def __init__(self, info: dict[str, Any], ydl_opts: dict[str, Any], storage: Storage):
         self.info = info
-        self.ydl_opts: dict = {
+        self.ydl_opts: dict[str, Any] = {
             'format': 'ba',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',

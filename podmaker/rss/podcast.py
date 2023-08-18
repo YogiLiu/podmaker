@@ -6,8 +6,7 @@ from dataclasses import dataclass, field
 from urllib.parse import ParseResult
 from xml.etree.ElementTree import Element
 
-from podmaker.rss.episode import Episode
-from podmaker.rss.core import Resource, RSSSerializer
+from podmaker.rss import Episode, Resource, RSSSerializer
 
 category_pattern = re.compile(r'^[\w &]+$')
 
@@ -114,9 +113,9 @@ class Podcast(RSSSerializer):
     @property
     def category_elements(self) -> Iterable[Element]:
         for category in self.categories:
-            category = self.parse_category(category)
-            if category is not None:
-                yield Element('itunes:category', text=category)
+            parsed_category = self.parse_category(category)
+            if parsed_category is not None:
+                yield Element('itunes:category', text=parsed_category)
 
     @staticmethod
     def parse_category(category: str) -> str | None:
@@ -130,4 +129,6 @@ class Podcast(RSSSerializer):
 
     @property
     def language_element(self) -> Element:
+        if self.language is None:
+            raise ValueError('language is required')
         return Element('language', text=self.language)

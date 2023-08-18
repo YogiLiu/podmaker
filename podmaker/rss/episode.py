@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 from xml.etree.ElementTree import Element
 
-from podmaker.rss.core import Resource, RSSGenerator
-
-from podmaker.rss.enclosure import Enclosure
+from podmaker.rss import Enclosure, Resource, RSSGenerator
 
 
 @dataclass
@@ -55,10 +53,14 @@ class Episode(RSSGenerator):
 
     @property
     def description_element(self) -> Element:
+        if self.description is None:
+            raise ValueError('description is required')
         return Element('description', text=self.description)
 
     @property
     def summary_element(self) -> Element:
+        if self.description is None:
+            raise ValueError('description is required')
         return Element('itunes:summary', text=self.description)
 
     @property
@@ -67,13 +69,19 @@ class Episode(RSSGenerator):
 
     @property
     def guid_element(self) -> Element:
+        if self.guid is None:
+            raise ValueError('guid is required')
         return Element('guid', {'isPermaLink': 'false'}, text=self.guid)
 
     @property
     def duration_element(self) -> Element:
+        if self.duration is None:
+            raise ValueError('duration is required')
         dur = math.ceil(self.duration.total_seconds())
         return Element('itunes:duration', text=str(dur))
 
     @property
     def pub_date_element(self) -> Element:
+        if self.pub_date is None:
+            raise ValueError('pub_date is required')
         return Element('pubDate', text=self.pub_date.strftime('%A, %d %b %Y %H:%M:%S %z'))

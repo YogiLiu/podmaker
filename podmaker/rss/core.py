@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from typing import TypeVar, Generic
+from typing import Generic, TypeVar
 from xml.etree.ElementTree import Element, tostring
 
 ResourceType = TypeVar('ResourceType')
