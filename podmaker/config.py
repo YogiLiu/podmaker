@@ -24,9 +24,15 @@ class S3Config(BaseModel):
     cdn_prefix: HttpUrl = Field(frozen=True)
 
 
+class SourceConfig(BaseModel):
+    name: str = Field(min_length=1, frozen=True)
+    url: HttpUrl = Field(frozen=True)
+
+
 class PMConfig(BaseModel):
     owner: OwnerConfig = Field(frozen=True)
     s3: S3Config = Field(frozen=True)
+    sources: tuple[SourceConfig, ...] = Field(frozen=True)
 
     @classmethod
     def from_file(cls, path: PurePath) -> PMConfig:
