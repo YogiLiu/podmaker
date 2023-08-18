@@ -11,9 +11,15 @@ boto3 = "^1.28.27"
 python-dotenv = "^1.0.0"
 yt-dlp = "^2023.7.6"
 
-
 [tool.poetry.group.dev.dependencies]
 boto3-stubs = {extras = ["essential"], version = "^1.28.27"}
+autohooks = "^23.7.0"
+autohooks-plugin-ruff = "^23.6.1"
+autohooks-plugin-mypy = "^23.3.0"
+
+[tool.autohooks]
+mode = "poetry"
+pre-commit = ["autohooks.plugins.mypy", "autohooks.plugins.ruff"]
 
 [build-system]
 requires = ["poetry-core"]
