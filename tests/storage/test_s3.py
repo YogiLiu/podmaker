@@ -57,7 +57,8 @@ class TestS3(unittest.TestCase):
                     endpoint='http://localhost:9000',
                     cdn_prefix='http://localhost:9000'
                 ),
-                owner=OwnerConfig(name='test', email='test@test.dev')
+                owner=OwnerConfig(name='test', email='test@test.dev'),
+                sources=[],
             )
         )
         self.file = BytesIO()

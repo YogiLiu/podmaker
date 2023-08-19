@@ -48,7 +48,8 @@ class TestYoutube(unittest.TestCase):
                     bucket='podmaker',
                     endpoint='http://localhost:9000',
                     cdn_prefix='http://localhost:9000'
-                )
+                ),
+                sources=[],
             )
         )
 

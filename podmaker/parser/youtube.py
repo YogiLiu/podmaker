@@ -4,6 +4,7 @@ import logging
 import os
 from collections.abc import Generator
 from datetime import datetime, timedelta
+from functools import lru_cache
 from tempfile import TemporaryDirectory
 from typing import Any
 from urllib.parse import ParseResult, urlparse
@@ -103,7 +104,6 @@ class Audio(Resource[Enclosure]):
         }
         self.ydl_opts.update(ydl_opts)
         self.storage = storage
-        self.cache: Enclosure | None = None
 
     def upload(self, key: str) -> tuple[ParseResult, int]:
         with TemporaryDirectory(prefix='podmaker_youtube_') as cache_dir:
@@ -119,19 +119,14 @@ class Audio(Resource[Enclosure]):
                 url = self.storage.put(f, key=key, content_type='audio/mp3')
         return url, length
 
+    @lru_cache(maxsize=1)
     def get(self) -> Enclosure | None:
-        if self.cache is None:
-            key = f'youtube/{self.info["id"]}.mp3'
-            info = self.storage.check(key)
-            if info:
-                logger.info(f'audio already exists: {key}')
-                url = info.uri
-                length = info.size
-            else:
-                url, length = self.upload(key)
-            self.cache = Enclosure(
-                url=url,
-                length=length,
-                type='audio/mp3',
-            )
-        return self.cache
+        key = f'youtube/{self.info["id"]}.mp3'
+        info = self.storage.check(key)
+        if info:
+            logger.info(f'audio already exists: {key}')
+            url = info.uri
+            length = info.size
+        else:
+            url, length = self.upload(key)
+        return Enclosure(url=url, length=length, type='audio/mp3')
