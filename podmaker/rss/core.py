@@ -5,6 +5,8 @@ from abc import ABCMeta, abstractmethod
 from typing import Generic, TypeVar
 from xml.etree.ElementTree import Element, fromstring, tostring
 
+from podmaker.rss.util.namespace import NamespaceGenerator
+
 if sys.version_info >= (3, 11):
     from typing import Self
 else:
@@ -38,9 +40,8 @@ class PlainResource(Resource[ResourceType]):
         return self.resource
 
 
-namespace = {
-    'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd'
-}
+# noinspection HttpUrlsUsage
+itunes = NamespaceGenerator('itunes', 'http://www.itunes.com/dtds/podcast-1.0.dtd')
 
 
 class RSSComponent(metaclass=ABCMeta):

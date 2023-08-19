@@ -9,8 +9,8 @@ from xml.etree.ElementTree import Element
 from dateutil.parser import parse
 
 from podmaker.rss import Enclosure, Resource
-from podmaker.rss.core import PlainResource, RSSComponent, namespace
-from podmaker.rss.util import XMLParser
+from podmaker.rss.core import PlainResource, RSSComponent, itunes
+from podmaker.rss.util.parse import XMLParser
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -60,8 +60,8 @@ class Episode(RSSComponent, XMLParser):
         title = cls._parse_required(el, '.title')
         description = el.findtext('.description')
         if description is None:
-            description = el.findtext('.itunes:summary', namespaces=namespace)
-        explicit_str = cls._parse_optional(el, '.itunes:explicit')
+            description = el.findtext(f'.{itunes("summary")}', namespaces=itunes.namespace)
+        explicit_str = cls._parse_optional(el, f'.{itunes("explicit")}')
         explicit = explicit_str == 'yes' if explicit_str is not None else None
         guid = cls._parse_optional(el, '.guid')
         duration = cls._parse_duration(el)
@@ -78,7 +78,7 @@ class Episode(RSSComponent, XMLParser):
 
     @staticmethod
     def _parse_duration(el: Element) -> timedelta | None:
-        duration_str = el.findtext('.itunes:duration', namespaces=namespace)
+        duration_str = el.findtext(f'.{itunes("duration")}', namespaces=itunes.namespace)
         if duration_str is None:
             return None
         if ':' in duration_str:
@@ -106,11 +106,11 @@ class Episode(RSSComponent, XMLParser):
     def summary_element(self) -> Element:
         if self.description is None:
             raise ValueError('description is required')
-        return Element('itunes:summary', text=self.description)
+        return itunes.el('summary', text=self.description)
 
     @property
     def explicit_element(self) -> Element:
-        return Element('itunes:explicit', text='yes' if self.explicit else 'no')
+        return itunes.el('explicit', text='yes' if self.explicit else 'no')
 
     @property
     def guid_element(self) -> Element:
@@ -123,10 +123,10 @@ class Episode(RSSComponent, XMLParser):
         if self.duration is None:
             raise ValueError('empty duration field')
         dur = math.ceil(self.duration.total_seconds())
-        return Element('itunes:duration', text=str(dur))
+        return itunes.el('duration', text=str(dur))
 
     @property
     def pub_date_element(self) -> Element:
         if self.pub_date is None:
             raise ValueError('empty pub_date field')
-        return Element('pubDate', text=self.pub_date.strftime('%A, %d %b %Y %H:%M:%S %z'))
+        return Element('pubDate', text=self.pub_date.strftime('%a, %d %b %Y %H:%M:%S %z'))

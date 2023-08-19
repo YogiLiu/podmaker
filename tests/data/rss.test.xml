@@ -27,7 +27,7 @@
       <enclosure url="https://www.example.com/podcasts/dafnas-zebras/audio/cleanstripes.mp3"
                  type="audio/mpeg" length="26004388"/>
       <itunes:duration>22:48</itunes:duration>
-      <guid>dzpodclean</guid>
+      <guid isPermaLink="false">dzpodclean</guid>
     </item>
   </channel>
 </rss>

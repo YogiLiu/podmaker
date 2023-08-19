@@ -8,8 +8,8 @@ from urllib.parse import ParseResult, urlparse
 from xml.etree.ElementTree import Element
 
 from podmaker.rss import Episode, Resource
-from podmaker.rss.core import PlainResource, RSSDeserializer, RSSSerializer, namespace
-from podmaker.rss.util import XMLParser
+from podmaker.rss.core import PlainResource, RSSDeserializer, RSSSerializer, itunes
+from podmaker.rss.util.parse import XMLParser
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -80,9 +80,9 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
         image = cls._parse_image(el)
         description = cls._parse_required(el, '.channel/description')
         owner = cls._parse_owner(el)
-        author = cls._parse_required(el, '.channel/itunes:author')
+        author = cls._parse_required(el, f'.channel/{itunes("author")}')
         categories = cls._parse_categories(el)
-        explicit = cls._parse_optional(el, '.channel/itunes:explicit') == 'yes'
+        explicit = cls._parse_optional(el, f'.channel/{itunes("explicit")}') == 'yes'
         language = cls._parse_optional(el, '.channel/language')
         return cls(
             items,
@@ -99,36 +99,36 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
 
     @classmethod
     def _parse_owner(cls, el: Element) -> Owner:
-        owner_el = el.find('.channel/itunes:owner', namespaces=namespace)
+        owner_el = el.find(f'.channel/{itunes("owner")}', itunes.namespace)
         if owner_el is None:
             raise ValueError('owner is required')
-        owner_name = cls._parse_optional(owner_el, '.itunes:name')
-        owner_email = cls._parse_required(owner_el, '.itunes:email')
+        owner_name = cls._parse_optional(owner_el, f'.{itunes("name")}')
+        owner_email = cls._parse_required(owner_el, f'.{itunes("email")}')
         return Owner(owner_email, owner_name)
 
     @staticmethod
-    def _parse_items(el: Element) -> Iterable[Episode]:
+    def _parse_items(el: Element) -> list[Episode]:
         item_els = el.findall('.channel/item')
         if not item_els:
             raise ValueError('items is required')
-        cnt = 0
+        items = []
         for item_el in item_els:
-            cnt += 1
-            yield Episode.from_xml(item_el)
-        if cnt == 0:
+            items.append(Episode.from_xml(item_el))
+        if not items:
             raise ValueError('items is required')
+        return items
 
     @staticmethod
     def _parse_categories(el: Element) -> list[str]:
         categories = []
-        for category_el in el.findall('.channel/itunes:category', namespaces=namespace):
+        for category_el in el.findall(f'.channel/{itunes("category")}', itunes.namespace):
             if category_el.text:
                 categories.append(category_el.text)
         return categories
 
     @staticmethod
     def _parse_image(el: Element) -> Resource[ParseResult]:
-        image_el = el.find('.channel/itunes:image', namespaces=namespace)
+        image_el = el.find(f'.channel/{itunes("image")}', itunes.namespace)
         if image_el is not None and image_el.get('href'):
             return PlainResource(urlparse(image_el.get('href')))  # type: ignore[arg-type]
         image_url = el.findtext('.channel/image/url')
@@ -155,7 +155,7 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
 
     @property
     def itunes_image_element(self) -> Element:
-        return Element('itunes:image', href=self.image.ensure().geturl())
+        return itunes.el('image', href=self.image.ensure().geturl())
 
     @property
     def image_element(self) -> Element:
@@ -171,26 +171,26 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
 
     @property
     def summary_element(self) -> Element:
-        return Element('itunes:summary', text=self.description)
+        return itunes.el('summary', text=self.description)
 
     @property
     def owner_element(self) -> Element:
-        el = Element('itunes:owner')
+        el = itunes.el('owner')
         if self.owner.name:
-            el.append(Element('itunes:name', text=self.owner.name))
-        el.append(Element('itunes:email', text=self.owner.email))
+            el.append(itunes.el('name', text=self.owner.name))
+        el.append(itunes.el('email', text=self.owner.email))
         return el
 
     @property
     def author_element(self) -> Element:
-        return Element('itunes:author', text=self.author)
+        return itunes.el('author', text=self.author)
 
     @property
     def category_elements(self) -> Iterable[Element]:
         for category in self.categories:
             parsed_category = self.parse_category(category)
             if parsed_category is not None:
-                yield Element('itunes:category', text=parsed_category)
+                yield itunes.el('category', text=parsed_category)
 
     @staticmethod
     def parse_category(category: str) -> str | None:
@@ -200,7 +200,7 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
 
     @property
     def explicit_element(self) -> Element:
-        return Element('itunes:explicit', text='yes' if self.explicit else 'no')
+        return itunes.el('explicit', text='yes' if self.explicit else 'no')
 
     @property
     def language_element(self) -> Element:
