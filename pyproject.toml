@@ -11,6 +11,7 @@ boto3 = "^1.28.27"
 yt-dlp = "^2023.7.6"
 tomlkit = "^0.12.1"
 pydantic = {extras = ["email"], version = "^2.2.0"}
+typing-extensions = "^4.7.1"
 
 [tool.poetry.group.dev.dependencies]
 boto3-stubs = { extras = ["essential"], version = "^1.28.27" }
