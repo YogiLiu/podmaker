@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import PurePath
+from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field, HttpUrl
 
@@ -12,7 +13,7 @@ else:
 
 
 class OwnerConfig(BaseModel):
-    name: str = Field(min_length=1, frozen=True)
+    name: Optional[str] = Field(None, min_length=1, frozen=True)
     email: EmailStr = Field(frozen=True)
 
 

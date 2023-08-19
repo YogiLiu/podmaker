@@ -16,4 +16,4 @@ class TestConfig(unittest.TestCase):
 
     def test_from_file(self) -> None:
         config = PMConfig.from_file(self.path)
-        self.assertEqual(config.model_dump(mode='json'), toml.loads(self.path.read_text()))
+        self.assertEqual(toml.loads(self.path.read_text()), config.model_dump(mode='json'))

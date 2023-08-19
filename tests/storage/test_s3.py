@@ -68,13 +68,13 @@ class TestS3(unittest.TestCase):
     def test_s3(self) -> None:
         for _ in range(2):
             result = self.s3.put(self.file, key='/test.bin', content_type='application/octet-stream')
-            self.assertEqual(result.geturl(), 'http://localhost:9000/test.bin')
+            self.assertEqual('http://localhost:9000/test.bin', result.geturl())
             info = self.s3.check(key='/test.bin')
             self.assertIsNotNone(info)
             if info is not None:
-                self.assertEqual(info.uri.geturl(), 'http://localhost:9000/test.bin')
-                self.assertEqual(info.size, self.file.getbuffer().nbytes)
-                self.assertEqual(info.type, 'application/octet-stream')
+                self.assertEqual('http://localhost:9000/test.bin', info.uri.geturl())
+                self.assertEqual(self.file.getbuffer().nbytes, info.size)
+                self.assertEqual('application/octet-stream', info.type)
 
     def test_check_empty(self) -> None:
         r = self.s3.check(key='/empty.bin')

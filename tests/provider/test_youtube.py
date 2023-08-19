@@ -55,27 +55,27 @@ class TestYoutube(unittest.TestCase):
 
     def test_fetch(self) -> None:
         podcast = self.youtube.fetch(self.uri)
-        self.assertEqual(podcast.link, self.uri.geturl())
-        self.assertEqual(podcast.title, 'Introduction to ARCore Augmented Faces')
+        self.assertEqual(self.uri, podcast.link)
+        self.assertEqual('Introduction to ARCore Augmented Faces', podcast.title)
         self.assertIsNotNone(podcast.image.ensure())
         self.assertEqual(
+            'Learn how to use ARCore’s Augmented Faces APIs to create face effects with Unity, Android, and iOS.',
             podcast.description,
-            'Learn how to use ARCore’s Augmented Faces APIs to create face effects with Unity, Android, and iOS.'
         )
-        self.assertEqual(podcast.owner.name, 'Podmaker')
-        self.assertEqual(podcast.owner.email, 'test@podmaker.dev')
-        self.assertEqual(podcast.author, 'Google for Developers')
-        self.assertEqual(podcast.categories, [])
+        self.assertEqual('Podmaker', podcast.owner.name)
+        self.assertEqual('test@podmaker.dev', podcast.owner.email)
+        self.assertEqual('Google for Developers', podcast.author)
+        self.assertEqual([], podcast.categories)
         self.assertFalse(podcast.explicit)
         self.assertIsNone(podcast.language)
         for (idx, episode) in enumerate(podcast.items):
             if idx >= len(self.test_cases):
                 break
             test_case = self.test_cases[idx]
-            self.assertEqual(episode.guid, test_case[0])
-            self.assertEqual(episode.title, test_case[1])
+            self.assertEqual(test_case[0], episode.guid)
+            self.assertEqual(test_case[1], episode.title)
             self.assertIsNotNone(episode.pub_date)
             if episode.pub_date is not None:
-                self.assertEqual(episode.pub_date.date(), test_case[2])
+                self.assertEqual(test_case[2], episode.pub_date.date())
             self.assertIsNotNone(podcast.image.ensure())
-            self.assertEqual(episode.enclosure.ensure().url, urlparse('https://example.com'))
+            self.assertEqual(urlparse('https://example.com'), episode.enclosure.ensure().url)

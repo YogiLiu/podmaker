@@ -1,28 +1,36 @@
 from __future__ import annotations
 
 import re
+import sys
 from collections.abc import Iterable
 from dataclasses import dataclass, field
-from urllib.parse import ParseResult
+from urllib.parse import ParseResult, urlparse
 from xml.etree.ElementTree import Element
 
-from podmaker.rss import Episode, Resource, RSSSerializer
+from podmaker.rss import Episode, PlainResource, Resource, RSSDeserializer, RSSSerializer
+from podmaker.rss.core import namespace
+from podmaker.rss.util import XMLParser
 
-category_pattern = re.compile(r'^[\w &]+$')
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
+
+_category_pattern = re.compile(r'^[\w &]+$')
 
 
 @dataclass
 class Owner:
-    name: str
     email: str
+    name: str | None = None
 
 
 @dataclass
-class Podcast(RSSSerializer):
+class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
     # Defines an episodes. At least one element in the items.
     items: Iterable[Episode]
     # Fully-qualified URL of the homepage of the podcast.
-    link: str
+    link: ParseResult
     # Name of the podcast.
     title: str
     # An image to associate with the podcast.
@@ -42,11 +50,9 @@ class Podcast(RSSSerializer):
     # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
     language: str | None = None
 
-    def render(self) -> Element:
-        el = Element(
-            'rss',
-            {'version': '2.0', 'xmlns:itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd'}
-        )
+    @property
+    def xml(self) -> Element:
+        el = Element('rss', {'version': '2.0'})
         channel = Element('channel')
         el.append(channel)
         channel.append(self.link_element)
@@ -66,14 +72,82 @@ class Podcast(RSSSerializer):
             channel.append(item)
         return el
 
+    @classmethod
+    def from_xml(cls, el: Element) -> Self:
+        items = cls._parse_items(el)
+        link = urlparse(cls._parse_required(el, '.channel/link'))
+        title = cls._parse_required(el, '.channel/title')
+        image = cls._parse_image(el)
+        description = cls._parse_required(el, '.channel/description')
+        owner = cls._parse_owner(el)
+        author = cls._parse_required(el, '.channel/itunes:author')
+        categories = cls._parse_categories(el)
+        explicit = cls._parse_optional(el, '.channel/itunes:explicit') == 'yes'
+        language = cls._parse_optional(el, '.channel/language')
+        return cls(
+            items,
+            link,
+            title,
+            image,
+            description,
+            owner,
+            author,
+            categories,
+            explicit,
+            language
+        )
+
+    @classmethod
+    def _parse_owner(cls, el: Element) -> Owner:
+        owner_el = el.find('.channel/itunes:owner', namespaces=namespace)
+        if owner_el is None:
+            raise ValueError('owner is required')
+        owner_name = cls._parse_optional(owner_el, '.itunes:name')
+        owner_email = cls._parse_required(owner_el, '.itunes:email')
+        return Owner(owner_email, owner_name)
+
+    @staticmethod
+    def _parse_items(el: Element) -> Iterable[Episode]:
+        item_els = el.findall('.channel/item')
+        if not item_els:
+            raise ValueError('items is required')
+        cnt = 0
+        for item_el in item_els:
+            cnt += 1
+            yield Episode.from_xml(item_el)
+        if cnt == 0:
+            raise ValueError('items is required')
+
+    @staticmethod
+    def _parse_categories(el: Element) -> list[str]:
+        categories = []
+        for category_el in el.findall('.channel/itunes:category', namespaces=namespace):
+            if category_el.text:
+                categories.append(category_el.text)
+        return categories
+
+    @staticmethod
+    def _parse_image(el: Element) -> Resource[ParseResult]:
+        image_el = el.find('.channel/itunes:image', namespaces=namespace)
+        if image_el is not None and image_el.get('href'):
+            return PlainResource(urlparse(image_el.get('href')))  # type: ignore[arg-type]
+        image_url = el.findtext('.channel/image/url')
+        if not image_url:
+            raise ValueError('image or itunes:image is required')
+        return PlainResource(urlparse(image_url))
+
     @property
     def items_element(self) -> Iterable[Element]:
+        cnt = 0
         for item in self.items:
-            yield item.render()
+            cnt += 1
+            yield item.xml
+        if cnt == 0:
+            raise ValueError('items is required')
 
     @property
     def link_element(self) -> Element:
-        return Element('link', text=self.link)
+        return Element('link', text=self.link.geturl())
 
     @property
     def title_element(self) -> Element:
@@ -86,7 +160,7 @@ class Podcast(RSSSerializer):
     @property
     def image_element(self) -> Element:
         el = Element('image', href=self.image.ensure().geturl())
-        el.append(Element('link', text=self.link))
+        el.append(Element('link', text=self.link.geturl()))
         el.append(Element('title', text=self.title))
         el.append(Element('url', text=self.image.ensure().geturl()))
         return el
@@ -102,7 +176,8 @@ class Podcast(RSSSerializer):
     @property
     def owner_element(self) -> Element:
         el = Element('itunes:owner')
-        el.append(Element('itunes:name', text=self.owner.name))
+        if self.owner.name:
+            el.append(Element('itunes:name', text=self.owner.name))
         el.append(Element('itunes:email', text=self.owner.email))
         return el
 
@@ -119,7 +194,7 @@ class Podcast(RSSSerializer):
 
     @staticmethod
     def parse_category(category: str) -> str | None:
-        if not category_pattern.match(category):
+        if not _category_pattern.match(category):
             return None
         return category.replace('&', '&amp;')
 
@@ -130,5 +205,5 @@ class Podcast(RSSSerializer):
     @property
     def language_element(self) -> Element:
         if self.language is None:
-            raise ValueError('language is required')
+            raise ValueError('empty language field')
         return Element('language', text=self.language)

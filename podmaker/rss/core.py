@@ -30,6 +30,7 @@ class PlainResource(Resource[ResourceType]):
     A resource that is not fetched from a remote location.
     It is useful for store resources that are already available in memory.
     """
+
     def __init__(self, resource: ResourceType):
         self.resource = resource
 
@@ -37,30 +38,41 @@ class PlainResource(Resource[ResourceType]):
         return self.resource
 
 
-class RSSGenerator(metaclass=ABCMeta):
+namespace = {
+    'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd'
+}
+
+
+class RSSComponent(metaclass=ABCMeta):
+    @property
     @abstractmethod
-    def render(self) -> Element:
+    def xml(self) -> Element:
         raise NotImplementedError
 
-
-class RSSSerializer(RSSGenerator, metaclass=ABCMeta):
-    @property
-    def xml_str(self) -> str:
-        el = self.render()
-        return tostring(el, encoding='unicode')
-
-    @property
-    def xml_bytes(self) -> bytes:
-        el = self.render()
-        return tostring(el)
-
-
-class RSSDeserializer(metaclass=ABCMeta):
     @classmethod
     @abstractmethod
     def from_xml(cls, el: Element) -> Self:
         raise NotImplementedError
 
+
+# https://www.w3.org/TR/xml/#sec-pi
+_pis = '<?xml version="1.0" encoding="UTF-8"?>\n'
+_pis_bytes = _pis.encode('utf-8')
+
+
+class RSSSerializer(RSSComponent, metaclass=ABCMeta):
+    @property
+    def str(self) -> str:
+        s = tostring(self.xml, encoding='unicode')
+        return _pis + s
+
+    @property
+    def bytes(self) -> bytes:
+        s = tostring(self.xml)
+        return _pis_bytes + s
+
+
+class RSSDeserializer(RSSComponent, metaclass=ABCMeta):
     @classmethod
     def from_rss(cls, rss: str | bytes) -> Self:
         if isinstance(rss, bytes):

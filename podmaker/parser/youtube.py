@@ -50,7 +50,7 @@ class YouTube(Parser):
             playlist = ydl.extract_info(url, download=False, process=False)
             podcast = Podcast(
                 items=self.fetch_item(playlist.get('entries', [])),
-                link=playlist['webpage_url'],
+                link=urlparse(playlist['webpage_url']),
                 title=playlist['title'],
                 image=PlaylistThumbnail(playlist['thumbnails']),
                 description=playlist['description'],
