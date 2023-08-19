@@ -8,8 +8,8 @@ from xml.etree.ElementTree import Element
 
 from dateutil.parser import parse
 
-from podmaker.rss import Enclosure, PlainResource, Resource, RSSComponent
-from podmaker.rss.core import namespace
+from podmaker.rss import Enclosure, Resource
+from podmaker.rss.core import PlainResource, RSSComponent, namespace
 from podmaker.rss.util import XMLParser
 
 if sys.version_info >= (3, 11):

@@ -7,8 +7,8 @@ from dataclasses import dataclass, field
 from urllib.parse import ParseResult, urlparse
 from xml.etree.ElementTree import Element
 
-from podmaker.rss import Episode, PlainResource, Resource, RSSDeserializer, RSSSerializer
-from podmaker.rss.core import namespace
+from podmaker.rss import Episode, Resource
+from podmaker.rss.core import PlainResource, RSSDeserializer, RSSSerializer, namespace
 from podmaker.rss.util import XMLParser
 
 if sys.version_info >= (3, 11):

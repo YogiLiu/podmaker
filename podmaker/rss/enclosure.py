@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from urllib.parse import ParseResult, urlparse
 from xml.etree.ElementTree import Element
 
-from podmaker.rss import RSSComponent
+from podmaker.rss.core import RSSComponent
 
 if sys.version_info >= (3, 11):
     from typing import Self
