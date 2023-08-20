@@ -4,7 +4,7 @@ from typing import IO, AnyStr
 from urllib.parse import ParseResult, urlparse
 
 from podmaker.config import OwnerConfig
-from podmaker.parser import YouTube
+from podmaker.fetcher import YouTube
 from podmaker.storage import ObjectInfo, Storage
 from tests.util import network_available
 

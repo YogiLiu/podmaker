@@ -12,7 +12,7 @@ from urllib.parse import ParseResult, urlparse
 import yt_dlp
 
 from podmaker.config import OwnerConfig
-from podmaker.parser import Parser
+from podmaker.fetcher import Fetcher
 from podmaker.rss import Enclosure, Episode, Owner, Podcast, Resource
 from podmaker.storage import Storage
 
@@ -33,7 +33,7 @@ class NoneLogger:
         pass
 
 
-class YouTube(Parser):
+class YouTube(Fetcher):
     def __init__(self, storage: Storage, owner: OwnerConfig):
         self.storage = storage
         self.ydl_opts = {'logger': NoneLogger()}
