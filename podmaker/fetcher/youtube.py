@@ -46,7 +46,7 @@ class YouTube(Fetcher):
         with _lock:
             if uri.path == "/playlist":
                 return self.fetch_playlist(uri.geturl())
-            raise NotImplementedError
+            raise ValueError(f'unsupported url: {uri}')
 
     def fetch_playlist(self, url: str) -> Podcast:
         logger.info(f'fetch playlist: {url}')

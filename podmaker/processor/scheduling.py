@@ -1,16 +1,28 @@
-from typing import Any
+import logging
 
-from rocketry import Rocketry
+from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 
 from podmaker.processor.core import Processor
 
+logger = logging.getLogger(__name__)
+
 
 class ScheduleProcessor(Processor):
-    def __init__(self, *args: Any, **kwargs: Any):
-        super().__init__(*args, **kwargs)
-        self._scheduler = Rocketry(excution='thread')
-
     def run(self) -> None:
-        for source in self._config.sources:
-            self._scheduler.task('hourly', func_name=lambda: self._execute(source))
-        self._scheduler.run()
+        scheduler = BlockingScheduler()
+        try:
+            for source in self._config.sources:
+                logger.info(f'Schedule job: {source.name}')
+                scheduler.add_job(
+                    func=self._execute,
+                    args=[source],
+                    trigger=IntervalTrigger(hours=1),
+                    name=f'Job-{source.name}',
+                )
+            scheduler.start()
+        except Exception as e:
+            logger.error(f'scheduler exited: {e}')
+            scheduler.shutdown(wait=False)
+            raise
+

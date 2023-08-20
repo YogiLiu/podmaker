@@ -13,7 +13,7 @@ tomlkit = "^0.12.1"
 pydantic = {extras = ["email"], version = "^2.2.0"}
 typing-extensions = "^4.7.1"
 python-dateutil = "^2.8.2"
-rocketry = "^2.5.1"
+apscheduler = "^3.10.4"
 
 [tool.poetry.group.dev.dependencies]
 boto3-stubs = { extras = ["essential"], version = "^1.28.27" }
@@ -37,7 +37,7 @@ strict = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["yt_dlp", "rocketry"]
+module = ["yt_dlp", "apscheduler.*"]
 ignore_missing_imports = true
 
 [build-system]

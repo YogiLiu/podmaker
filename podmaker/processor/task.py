@@ -20,7 +20,7 @@ class Task:
             if self._source.url.host == 'www.youtube.com':
                 _fetcher_instances[self._source.url.host] = YouTube(self._storage, self._owner)
             else:
-                raise NotImplementedError
+                raise ValueError(f'unsupported url: {self._source.url}')
         return _fetcher_instances[self._source.url.host]
 
     def start(self) -> Podcast:
