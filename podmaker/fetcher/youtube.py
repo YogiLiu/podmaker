@@ -19,27 +19,13 @@ from podmaker.storage import Storage
 logger = logging.getLogger(__name__)
 
 
-class NoneLogger:
-    def debug(self, msg: Any) -> None:
-        pass
-
-    def info(self, msg: Any) -> None:
-        pass
-
-    def warning(self, msg: Any) -> None:
-        pass
-
-    def error(self, msg: Any) -> None:
-        pass
-
-
 _lock = threading.Lock()
 
 
 class YouTube(Fetcher):
     def __init__(self, storage: Storage, owner: OwnerConfig):
         self.storage = storage
-        self.ydl_opts = {'logger': NoneLogger()}
+        self.ydl_opts = {'logger': logging.getLogger('yt_dlp')}
         self.owner = owner
 
     def fetch(self, uri: ParseResult) -> Podcast:
