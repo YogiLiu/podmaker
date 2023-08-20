@@ -39,19 +39,19 @@ class Episode(RSSComponent, XMLParser):
     @property
     def xml(self) -> Element:
         el = Element('item')
-        el.append(self.enclosure_element)
-        el.append(self.title_element)
+        el.append(self._enclosure_el)
+        el.append(self._title_el)
         if self.description:
-            el.append(self.description_element)
-            el.append(self.summary_element)
+            el.append(self._description_el)
+            el.append(self._summary_e)
         if self.explicit is not None:
-            el.append(self.explicit_element)
+            el.append(self._explicit_el)
         if self.guid:
-            el.append(self.guid_element)
+            el.append(self._guid_el)
         if self.duration:
-            el.append(self.duration_element)
+            el.append(self._duration_el)
         if self.pub_date:
-            el.append(self.pub_date_element)
+            el.append(self._pub_date_el)
         return el
 
     @classmethod
@@ -89,44 +89,44 @@ class Episode(RSSComponent, XMLParser):
         return timedelta(seconds=int(duration_str))
 
     @property
-    def enclosure_element(self) -> Element:
+    def _enclosure_el(self) -> Element:
         return self.enclosure.ensure().xml
 
     @property
-    def title_element(self) -> Element:
+    def _title_el(self) -> Element:
         return Element('title', text=self.title)
 
     @property
-    def description_element(self) -> Element:
+    def _description_el(self) -> Element:
         if self.description is None:
             raise ValueError('description is required')
         return Element('description', text=self.description)
 
     @property
-    def summary_element(self) -> Element:
+    def _summary_e(self) -> Element:
         if self.description is None:
             raise ValueError('description is required')
         return itunes.el('summary', text=self.description)
 
     @property
-    def explicit_element(self) -> Element:
+    def _explicit_el(self) -> Element:
         return itunes.el('explicit', text='yes' if self.explicit else 'no')
 
     @property
-    def guid_element(self) -> Element:
+    def _guid_el(self) -> Element:
         if self.guid is None:
             raise ValueError('empty guid field')
         return Element('guid', {'isPermaLink': 'false'}, text=self.guid)
 
     @property
-    def duration_element(self) -> Element:
+    def _duration_el(self) -> Element:
         if self.duration is None:
             raise ValueError('empty duration field')
         dur = math.ceil(self.duration.total_seconds())
         return itunes.el('duration', text=str(dur))
 
     @property
-    def pub_date_element(self) -> Element:
+    def _pub_date_el(self) -> Element:
         if self.pub_date is None:
             raise ValueError('empty pub_date field')
         return Element('pubDate', text=self.pub_date.strftime('%a, %d %b %Y %H:%M:%S %z'))

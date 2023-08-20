@@ -55,20 +55,20 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
         el = Element('rss', {'version': '2.0'})
         channel = Element('channel')
         el.append(channel)
-        channel.append(self.link_element)
-        channel.append(self.title_element)
-        channel.append(self.itunes_image_element)
-        channel.append(self.image_element)
-        channel.append(self.description_element)
-        channel.append(self.summary_element)
-        channel.append(self.owner_element)
-        channel.append(self.author_element)
-        for category in self.category_elements:
+        channel.append(self._link_el)
+        channel.append(self._title_el)
+        channel.append(self._itunes_image_el)
+        channel.append(self._image_el)
+        channel.append(self._description_el)
+        channel.append(self._summary_el)
+        channel.append(self._owner_el)
+        channel.append(self._author_el)
+        for category in self._category_el:
             channel.append(category)
-        channel.append(self.explicit_element)
+        channel.append(self._explicit_el)
         if self.language:
-            channel.append(self.language_element)
-        for item in self.items_element:
+            channel.append(self._language_el)
+        for item in self._items_el:
             channel.append(item)
         return el
 
@@ -137,7 +137,7 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
         return PlainResource(urlparse(image_url))
 
     @property
-    def items_element(self) -> Iterable[Element]:
+    def _items_el(self) -> Iterable[Element]:
         cnt = 0
         for item in self.items:
             cnt += 1
@@ -146,19 +146,19 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
             raise ValueError('items is required')
 
     @property
-    def link_element(self) -> Element:
+    def _link_el(self) -> Element:
         return Element('link', text=self.link.geturl())
 
     @property
-    def title_element(self) -> Element:
+    def _title_el(self) -> Element:
         return Element('title', text=self.title)
 
     @property
-    def itunes_image_element(self) -> Element:
+    def _itunes_image_el(self) -> Element:
         return itunes.el('image', href=self.image.ensure().geturl())
 
     @property
-    def image_element(self) -> Element:
+    def _image_el(self) -> Element:
         el = Element('image', href=self.image.ensure().geturl())
         el.append(Element('link', text=self.link.geturl()))
         el.append(Element('title', text=self.title))
@@ -166,15 +166,15 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
         return el
 
     @property
-    def description_element(self) -> Element:
+    def _description_el(self) -> Element:
         return Element('description', text=self.description)
 
     @property
-    def summary_element(self) -> Element:
+    def _summary_el(self) -> Element:
         return itunes.el('summary', text=self.description)
 
     @property
-    def owner_element(self) -> Element:
+    def _owner_el(self) -> Element:
         el = itunes.el('owner')
         if self.owner.name:
             el.append(itunes.el('name', text=self.owner.name))
@@ -182,28 +182,28 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
         return el
 
     @property
-    def author_element(self) -> Element:
+    def _author_el(self) -> Element:
         return itunes.el('author', text=self.author)
 
     @property
-    def category_elements(self) -> Iterable[Element]:
+    def _category_el(self) -> Iterable[Element]:
         for category in self.categories:
-            parsed_category = self.parse_category(category)
+            parsed_category = self._parse_category(category)
             if parsed_category is not None:
                 yield itunes.el('category', text=parsed_category)
 
     @staticmethod
-    def parse_category(category: str) -> str | None:
+    def _parse_category(category: str) -> str | None:
         if not _category_pattern.match(category):
             return None
         return category.replace('&', '&amp;')
 
     @property
-    def explicit_element(self) -> Element:
+    def _explicit_el(self) -> Element:
         return itunes.el('explicit', text='yes' if self.explicit else 'no')
 
     @property
-    def language_element(self) -> Element:
+    def _language_el(self) -> Element:
         if self.language is None:
             raise ValueError('empty language field')
         return Element('language', text=self.language)
