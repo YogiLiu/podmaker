@@ -23,6 +23,6 @@ class ScheduleProcessor(Processor):
             scheduler.start()
         except Exception as e:
             logger.error(f'scheduler exited: {e}')
-            scheduler.shutdown(wait=False)
+            scheduler.shutdown(wait=True)
             raise
 
