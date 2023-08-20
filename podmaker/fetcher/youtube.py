@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import threading
 from collections.abc import Generator
 from datetime import datetime, timedelta
 from functools import lru_cache
@@ -33,6 +34,9 @@ class NoneLogger:
         pass
 
 
+_lock = threading.Lock()
+
+
 class YouTube(Fetcher):
     def __init__(self, storage: Storage, owner: OwnerConfig):
         self.storage = storage
@@ -40,9 +44,10 @@ class YouTube(Fetcher):
         self.owner = owner
 
     def fetch(self, uri: ParseResult) -> Podcast:
-        if uri.path == "/playlist":
-            return self.fetch_playlist(uri.geturl())
-        raise NotImplementedError
+        with _lock:
+            if uri.path == "/playlist":
+                return self.fetch_playlist(uri.geturl())
+            raise NotImplementedError
 
     def fetch_playlist(self, url: str) -> Podcast:
         logger.info(f'fetch playlist: {url}')
