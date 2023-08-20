@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timedelta
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.interval import IntervalTrigger
@@ -18,6 +19,7 @@ class ScheduleProcessor(Processor):
                     func=self._execute,
                     args=[source],
                     trigger=IntervalTrigger(hours=1),
+                    next_run_time=datetime.now() + timedelta(minutes=1),
                     name=f'Job-{source.id}',
                 )
             scheduler.start()
