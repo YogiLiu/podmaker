@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import sys
 from pathlib import PurePath
-from typing import Literal, Optional
+from typing import AnyStr, Literal, Optional
 
-from pydantic import BaseModel, EmailStr, Field, HttpUrl, ValidationError
+from pydantic import BaseModel, EmailStr, Field, HttpUrl, ValidationError, field_validator
 
 if sys.version_info >= (3, 11):
     import tomllib as toml
@@ -20,6 +20,18 @@ class OwnerConfig(BaseModel):
 class AppConfig(BaseModel):
     mode: Literal['oneshot', 'schedule'] = Field('oneshot', frozen=True)
     loglevel: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR'] = Field('INFO', frozen=True)
+
+    @classmethod
+    @field_validator('mode', mode='before')
+    def mode_value(cls, v: AnyStr) -> str:
+        """for tomlkit"""
+        return str(v)
+
+    @classmethod
+    @field_validator('loglevel', mode='before')
+    def loglevel_value(cls, v: AnyStr) -> str:
+        """for tomlkit"""
+        return str(v)
 
 
 class S3Config(BaseModel):
