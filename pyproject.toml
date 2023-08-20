@@ -13,6 +13,7 @@ tomlkit = "^0.12.1"
 pydantic = {extras = ["email"], version = "^2.2.0"}
 typing-extensions = "^4.7.1"
 python-dateutil = "^2.8.2"
+rocketry = "^2.5.1"
 
 [tool.poetry.group.dev.dependencies]
 boto3-stubs = { extras = ["essential"], version = "^1.28.27" }
@@ -33,12 +34,10 @@ line-length = 120
 [tool.mypy]
 python_version = "3.9"
 strict = true
-plugins = [
-    "pydantic.mypy"
-]
+plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = "yt_dlp"
+module = ["yt_dlp", "rocketry"]
 ignore_missing_imports = true
 
 [build-system]

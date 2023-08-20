@@ -1456,6 +1456,28 @@ files = [
 six = ">=1.5"
 
 [[package]]
+name = "redbird"
+version = "0.7.1"
+description = "Repository Patterns for Python"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "redbird-0.7.1-py3-none-any.whl", hash = "sha256:6a1fe83fa9dfc0c5b9cb256b54376c299c423f2daba7bcbc081a820ff5b3c6c1"},
+    {file = "redbird-0.7.1.tar.gz", hash = "sha256:9ef1098f2a0e68afe40349475018f7694b05bdf92250772cd8d0126f26de58a9"},
+]
+
+[package.dependencies]
+pydantic = "*"
+typing-extensions = "*"
+
+[package.extras]
+full = ["pydantic-sqlalchemy", "pymongo", "requests", "sqlalchemy"]
+mongodb = ["pymongo"]
+rest = ["requests"]
+sql = ["pydantic-sqlalchemy", "sqlalchemy"]
+test = ["mongomock", "pydantic-sqlalchemy", "pymongo", "pytest", "python-dotenv", "requests", "responses", "sqlalchemy"]
+
+[[package]]
 name = "rich"
 version = "13.5.2"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
@@ -1472,6 +1494,26 @@ pygments = ">=2.13.0,<3.0.0"
 
 [package.extras]
 jupyter = ["ipywidgets (>=7.5.1,<9)"]
+
+[[package]]
+name = "rocketry"
+version = "2.5.1"
+description = "Advanced scheduling framework"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "rocketry-2.5.1-py3-none-any.whl", hash = "sha256:d8755e909026ba401174218bc0a0958044973244cd07e1405e80f85512440253"},
+    {file = "rocketry-2.5.1.tar.gz", hash = "sha256:11d1fb3d2856c5b2727bb4814c4f2bfbd2803067eebeac872d34a4c7a6756825"},
+]
+
+[package.dependencies]
+pydantic = "*"
+python-dateutil = "*"
+redbird = ">=0.5.0"
+
+[package.extras]
+docs = ["pydata-sphinx-theme", "sphinx (>=1.7.5)", "sphinx-book-theme", "sphinx-copybutton", "sphinx-material"]
+test = ["pytest", "pytest-asyncio"]
 
 [[package]]
 name = "ruff"
@@ -1732,4 +1774,4 @@ websockets = "*"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "cffbc0ff5f50fed8fb0eef042ded300f5fb89e9ef628ecb052a1b30afbec6ee1"
+content-hash = "9fbe4a7a98daa7b0341a00e3b9b52ce98f833a0b5fa455e0bd7a5803f2f1365a"

@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import unittest
 from datetime import date
-from typing import IO, AnyStr
+from typing import IO, Any, AnyStr
 from urllib.parse import ParseResult, urlparse
 
 from podmaker.config import OwnerConfig
@@ -24,6 +26,9 @@ class MockStorage(Storage):
             size=0,
             type='audio/mp3'
         )
+
+    def get(self, key: str) -> Any:
+        pass
 
 
 @unittest.skipUnless(network_available('https://www.youtube.com'), 'network is not available')

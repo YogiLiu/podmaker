@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import IO, AnyStr
+from io import BytesIO
+from typing import IO, AnyStr, Iterator
 from urllib.parse import ParseResult
 
 
@@ -16,6 +18,9 @@ class ObjectInfo:
     type: str
 
 
+EMPTY_FILE = BytesIO(b'')
+
+
 class Storage(ABC):
     @abstractmethod
     def put(self, data: IO[AnyStr], key: str, *, content_type: str = '') -> ParseResult:
@@ -26,4 +31,12 @@ class Storage(ABC):
 
     @abstractmethod
     def check(self, key: str) -> ObjectInfo | None:
+        raise NotImplementedError
+
+    @abstractmethod
+    @contextmanager
+    def get(self, key: str) -> Iterator[IO[bytes]]:
+        """
+        :return: file-like object, return `EMPTY_FILE` if not found
+        """
         raise NotImplementedError

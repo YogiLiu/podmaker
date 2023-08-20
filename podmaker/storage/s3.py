@@ -3,7 +3,9 @@ from __future__ import annotations
 import base64
 import hashlib
 import logging
-from typing import IO, AnyStr
+from contextlib import contextmanager
+from tempfile import SpooledTemporaryFile
+from typing import IO, AnyStr, Iterator
 from urllib.parse import ParseResult, urlparse
 
 import boto3
@@ -11,12 +13,14 @@ from botocore.exceptions import ClientError
 
 from podmaker.config import S3Config
 from podmaker.storage import ObjectInfo, Storage
+from podmaker.storage.core import EMPTY_FILE
 
 logger = logging.getLogger(__name__)
 
 
 class S3(Storage):
-    _md5_chunk_size = 1024 * 1024
+    _md5_chunk_size = 10 * 1024 * 1024  # 10MB
+    _file_buffering = 10 * 1024 * 1024  # 10MB
 
     def __init__(self, config: S3Config):
         self.s3 = boto3.resource(
@@ -65,3 +69,20 @@ class S3(Storage):
     def get_uri(self, key: str) -> ParseResult:
         prefix = self.cdn_prefix.removesuffix('/')
         return urlparse(f'{prefix}/{key}')
+
+    @contextmanager
+    def get(self, key: str) -> Iterator[IO[bytes]]:
+        if key.startswith('/'):
+            key = key[1:]
+        with SpooledTemporaryFile(buffering=self._file_buffering) as f:
+            try:
+                obj = self.bucket.Object(key=key).get()
+                while True:
+                    chunk = obj['Body'].read(self._file_buffering)
+                    if not chunk:
+                        break
+                    f.write(chunk)
+                f.seek(0)
+                yield f
+            except ClientError:
+                yield EMPTY_FILE
