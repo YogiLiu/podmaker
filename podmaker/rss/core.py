@@ -55,6 +55,24 @@ class RSSComponent(metaclass=ABCMeta):
     def from_xml(cls, el: Element) -> Self:
         raise NotImplementedError
 
+    @abstractmethod
+    def merge(self, other: Self) -> bool:
+        """
+        Merge the other component into this one.
+        :return: Whether changes were made.
+        """
+        raise NotImplementedError
+
+    def _common_merge(self, other: Self, field: str | tuple[str, ...]) -> bool:
+        if isinstance(field, tuple):
+            return any(self._common_merge(other, f) for f in field)
+        a = getattr(self, field)
+        b = getattr(other, field)
+        if a != b:
+            setattr(self, field, b)
+            return True
+        return False
+
 
 # https://www.w3.org/TR/xml/#sec-pi
 _pis = '<?xml version="1.0" encoding="UTF-8"?>\n'

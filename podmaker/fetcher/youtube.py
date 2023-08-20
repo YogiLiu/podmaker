@@ -3,11 +3,10 @@ from __future__ import annotations
 import logging
 import os
 import threading
-from collections.abc import Generator
 from datetime import datetime, timedelta
 from functools import lru_cache
 from tempfile import TemporaryDirectory
-from typing import Any
+from typing import Any, Iterable
 from urllib.parse import ParseResult, urlparse
 
 import yt_dlp
@@ -54,7 +53,7 @@ class YouTube(Fetcher):
         with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
             playlist = ydl.extract_info(url, download=False, process=False)
             podcast = Podcast(
-                items=self.fetch_item(playlist.get('entries', [])),
+                items=Playlist(playlist.get('entries', []), self.ydl_opts, self.storage),
                 link=urlparse(playlist['webpage_url']),
                 title=playlist['title'],
                 image=PlaylistThumbnail(playlist['thumbnails']),
@@ -65,9 +64,18 @@ class YouTube(Fetcher):
             )
         return podcast
 
-    def fetch_item(self, entries: Generator[dict[str, Any], None, None]) -> Generator[Episode, None, None]:
+
+class Playlist(Resource[Iterable[Episode]]):
+    def __init__(self, entries: Iterable[dict[str, Any]], ydl_opts: dict[str, Any], storage: Storage):
+        self.entries = entries
+        self.ydl_opts = ydl_opts
+        self.storage = storage
+
+    def get(self) -> Iterable[Episode] | None:
         with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
-            for entry in entries:
+            is_empty = True
+            for entry in self.entries:
+                is_empty = False
                 video_info = ydl.extract_info(entry['url'], download=False)
                 upload_at = datetime.strptime(video_info['upload_date'], '%Y%m%d')
                 logger.info(f'fetch item: {video_info["id"]}')
@@ -79,6 +87,8 @@ class YouTube(Fetcher):
                     duration=timedelta(seconds=video_info['duration']),
                     pub_date=upload_at,
                 )
+            if is_empty:
+                return None
 
 
 class PlaylistThumbnail(Resource[ParseResult]):

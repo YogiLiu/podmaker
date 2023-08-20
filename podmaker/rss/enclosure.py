@@ -42,3 +42,6 @@ class Enclosure(RSSComponent):
             length,
             content_type
         )
+
+    def merge(self, other: Self) -> bool:
+        return self._common_merge(other, ('url', 'length', 'type'))

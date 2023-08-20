@@ -58,7 +58,7 @@ class TestYoutube(unittest.TestCase):
         self.assertEqual([], podcast.categories)
         self.assertFalse(podcast.explicit)
         self.assertIsNone(podcast.language)
-        for (idx, episode) in enumerate(podcast.items):
+        for (idx, episode) in enumerate(podcast.items.ensure()):
             if idx >= len(self.test_cases):
                 break
             test_case = self.test_cases[idx]

@@ -4,6 +4,7 @@ import re
 import sys
 from collections.abc import Iterable
 from dataclasses import dataclass, field
+from typing import Any
 from urllib.parse import ParseResult, urlparse
 from xml.etree.ElementTree import Element
 
@@ -24,11 +25,16 @@ class Owner:
     email: str
     name: str | None = None
 
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, Owner):
+            return False
+        return self.email == other.email and self.name == other.name
+
 
 @dataclass
 class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
     # Defines an episodes. At least one element in the items.
-    items: Iterable[Episode]
+    items: Resource[Iterable[Episode]]
     # Fully-qualified URL of the homepage of the podcast.
     link: ParseResult
     # Name of the podcast.
@@ -97,6 +103,38 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
             language
         )
 
+    def merge(self, other: Self) -> bool:
+        has_changed = self._common_merge(
+            other,
+            ('link', 'title', 'description', 'owner', 'author', 'explicit', 'language')
+        )
+        image_url = self.image.get()
+        if image_url != other.image.get():
+            self.image = other.image
+            has_changed = True
+        if set(self.categories) != set(other.categories):
+            self.categories = other.categories
+            has_changed = True
+        if self._merge_items(other.items):
+            has_changed = True
+        return has_changed
+
+    def _merge_items(self, others: Resource[Iterable[Episode]]) -> bool:
+        new_items = []
+        old_ids = set(i.unique_id for i in self.items.ensure())
+        for item in others.ensure():
+            if item.unique_id not in old_ids:
+                new_items.append(item)
+        if not new_items:
+            return False
+        sorted_items = sorted(
+            list(self.items.ensure()) + new_items,
+            key=lambda i: i.pub_date or 0,
+            reverse=True
+        )
+        self.items = PlainResource(sorted_items)
+        return True
+
     @classmethod
     def _parse_owner(cls, el: Element) -> Owner:
         owner_el = el.find(f'.channel/{itunes("owner")}', itunes.namespace)
@@ -107,7 +145,7 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
         return Owner(owner_email, owner_name)
 
     @staticmethod
-    def _parse_items(el: Element) -> list[Episode]:
+    def _parse_items(el: Element) -> Resource[Iterable[Episode]]:
         item_els = el.findall('.channel/item')
         if not item_els:
             raise ValueError('items is required')
@@ -116,7 +154,7 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
             items.append(Episode.from_xml(item_el))
         if not items:
             raise ValueError('items is required')
-        return items
+        return PlainResource(items)
 
     @staticmethod
     def _parse_categories(el: Element) -> list[str]:
@@ -138,11 +176,11 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
 
     @property
     def _items_el(self) -> Iterable[Element]:
-        cnt = 0
-        for item in self.items:
-            cnt += 1
+        is_empty = True
+        for item in self.items.ensure():
+            is_empty = False
             yield item.xml
-        if cnt == 0:
+        if is_empty:
             raise ValueError('items is required')
 
     @property

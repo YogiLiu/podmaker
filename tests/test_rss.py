@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import math
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
+from urllib.parse import urlparse
 from xml.etree.ElementTree import Element, fromstring
 
 from dateutil.parser import parse
 
-from podmaker.rss import Podcast
-from podmaker.rss.core import itunes
+from podmaker.rss import Episode, Podcast
+from podmaker.rss.core import PlainResource, Resource, itunes
 
 
 def convert_to_seconds(duration: str) -> int:
@@ -68,7 +70,7 @@ class TestRSS(unittest.TestCase):
         else:
             self.assertIsNone(podcast.explicit)
         item_els = self.element.findall('.channel/item')
-        for idx, item in enumerate(podcast.items):
+        for idx, item in enumerate(podcast.items.ensure()):
             el = item_els[idx]
             enclosure_el = el.find('.enclosure')
             self.assertEqual(
@@ -184,3 +186,39 @@ class TestRSS(unittest.TestCase):
                 else:
                     self.assertEqual(a_t, b_t)
                 self.assertEqual(a.attrib, b.attrib)  # type: ignore[union-attr]
+
+    def test_merge(self) -> None:
+        ap = Podcast.from_rss(self.rss)
+        bp = Podcast.from_rss(self.rss)
+        self.assertFalse(ap.merge(bp))
+        items = list(bp.items.ensure())
+        items.insert(
+            0,
+            Episode(
+                enclosure=items[0].enclosure,
+                title='foo',
+                description='bar',
+                guid='baz',
+                duration=items[0].duration,
+                explicit=False,
+                pub_date=datetime.now(timezone.utc),
+            )
+        )
+        cases = [
+            ('items', PlainResource(items)),
+            ('link', urlparse('https://example.com')),
+            ('title', 'foo'),
+            ('image', PlainResource(urlparse('https://example.com/image.png'))),
+            ('description', 'bar'),
+            ('author', 'baz'),
+            ('categories', ['foo', 'bar']),
+            ('explicit', True),
+            ('language', 'ja'),
+        ]
+        for field, value in cases:
+            setattr(bp, field, value)
+            self.assertTrue(ap.merge(bp), f'{field} is not merged')
+            if isinstance(value, Resource):
+                self.assertEqual(getattr(ap, field).get(), value.get(), f'{field} is not merged')
+            else:
+                self.assertEqual(getattr(ap, field), value, f'{field} is not merged')

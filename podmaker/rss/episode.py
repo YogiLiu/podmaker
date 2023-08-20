@@ -4,6 +4,7 @@ import math
 import sys
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from typing import Any
 from xml.etree.ElementTree import Element
 
 from dateutil.parser import parse
@@ -68,6 +69,31 @@ class Episode(RSSComponent, XMLParser):
         pub_date_str = cls._parse_optional(el, '.pubDate')
         pub_date = parse(pub_date_str) if pub_date_str is not None else None
         return cls(enclosure, title, description, explicit, guid, duration, pub_date)
+
+    def merge(self, other: Self) -> bool:
+        has_changed = False
+        enclosure = self.enclosure.ensure()
+        if enclosure.merge(other.enclosure.ensure()):
+            has_changed = True
+            self.enclosure = PlainResource(enclosure)
+        return any([
+            has_changed,
+            self._common_merge(
+                other,
+                ('title', 'description', 'explicit', 'guid', 'duration', 'pub_date')
+            )
+        ])
+
+    @property
+    def unique_id(self) -> str:
+        if self.guid is None:
+            return self.enclosure.ensure().url.geturl()
+        return self.guid
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, Episode):
+            return False
+        return self.unique_id == other.unique_id
 
     @staticmethod
     def _parse_enclosure(el: Element) -> PlainResource[Enclosure]:
