@@ -17,18 +17,19 @@ class OwnerConfig(BaseModel):
     email: EmailStr = Field(frozen=True)
 
 
+# noinspection PyNestedDecorators
 class AppConfig(BaseModel):
     mode: Literal['oneshot', 'schedule'] = Field('oneshot', frozen=True)
     loglevel: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR'] = Field('INFO', frozen=True)
 
-    @classmethod
     @field_validator('mode', mode='before')
+    @classmethod
     def mode_value(cls, v: AnyStr) -> str:
         """for tomlkit"""
         return str(v)
 
-    @classmethod
     @field_validator('loglevel', mode='before')
+    @classmethod
     def loglevel_value(cls, v: AnyStr) -> str:
         """for tomlkit"""
         return str(v)
