@@ -185,11 +185,11 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
 
     @property
     def _link_el(self) -> Element:
-        return Element('link', text=self.link.geturl())
+        return self._el_creator('link', self.link.geturl())
 
     @property
     def _title_el(self) -> Element:
-        return Element('title', text=self.title)
+        return self._el_creator('title', self.title)
 
     @property
     def _itunes_image_el(self) -> Element:
@@ -197,15 +197,15 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
 
     @property
     def _image_el(self) -> Element:
-        el = Element('image', href=self.image.ensure().geturl())
-        el.append(Element('link', text=self.link.geturl()))
-        el.append(Element('title', text=self.title))
-        el.append(Element('url', text=self.image.ensure().geturl()))
+        el = self._el_creator('image', self.image.ensure().geturl())
+        el.append(self._el_creator('link', self.link.geturl()))
+        el.append(self._el_creator('title', self.title))
+        el.append(self._el_creator('url', self.image.ensure().geturl()))
         return el
 
     @property
     def _description_el(self) -> Element:
-        return Element('description', text=self.description)
+        return self._el_creator('description', self.description)
 
     @property
     def _summary_el(self) -> Element:
@@ -244,4 +244,4 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
     def _language_el(self) -> Element:
         if self.language is None:
             raise ValueError('empty language field')
-        return Element('language', text=self.language)
+        return self._el_creator('language', self.language)

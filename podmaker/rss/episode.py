@@ -120,13 +120,13 @@ class Episode(RSSComponent, XMLParser):
 
     @property
     def _title_el(self) -> Element:
-        return Element('title', text=self.title)
+        return self._el_creator('title', self.title)
 
     @property
     def _description_el(self) -> Element:
         if self.description is None:
             raise ValueError('description is required')
-        return Element('description', text=self.description)
+        return self._el_creator('description', self.description)
 
     @property
     def _summary_e(self) -> Element:
@@ -142,7 +142,7 @@ class Episode(RSSComponent, XMLParser):
     def _guid_el(self) -> Element:
         if self.guid is None:
             raise ValueError('empty guid field')
-        return Element('guid', {'isPermaLink': 'false'}, text=self.guid)
+        return self._el_creator('guid', self.guid, {'isPermaLink': 'false'})
 
     @property
     def _duration_el(self) -> Element:
@@ -155,4 +155,4 @@ class Episode(RSSComponent, XMLParser):
     def _pub_date_el(self) -> Element:
         if self.pub_date is None:
             raise ValueError('empty pub_date field')
-        return Element('pubDate', text=self.pub_date.strftime('%a, %d %b %Y %H:%M:%S %z'))
+        return self._el_creator('pubDate', self.pub_date.strftime('%a, %d %b %Y %H:%M:%S %z'))

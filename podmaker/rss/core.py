@@ -63,6 +63,13 @@ class RSSComponent(metaclass=ABCMeta):
         """
         raise NotImplementedError
 
+    @staticmethod
+    def _el_creator(tag: str, text: str | None = None, attrib: dict[str, str] | None = None) -> Element:
+        el = Element(tag, attrib or {})
+        if text is not None:
+            el.text = text
+        return el
+
     def _common_merge(self, other: Self, field: str | tuple[str, ...]) -> bool:
         if isinstance(field, tuple):
             return any(self._common_merge(other, f) for f in field)

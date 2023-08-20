@@ -141,7 +141,7 @@ class TestRSS(unittest.TestCase):
             {
                 'a': f'.channel/{itunes("image")}',
                 'b': '.channel/image/url',
-                'action': lambda el: el.get('text') if el.tag == 'url' else el.get('href')
+                'action': lambda el: el.text if el.tag == 'url' else el.get('href')
             },
             '.channel/language',
             '.channel/link',
@@ -165,7 +165,7 @@ class TestRSS(unittest.TestCase):
                 a = self.element.find(case['a'])
                 b = xml.find(case['b'])
                 action: Callable[[Element], Any] = case['action']
-                self.assertEqual(action(a), action(b))  # type: ignore[arg-type]
+                self.assertEqual(action(a), action(b), case)  # type: ignore[arg-type]
             else:
                 if isinstance(case, list):
                     a = self.element.find(case[0])
@@ -180,12 +180,12 @@ class TestRSS(unittest.TestCase):
                 a_t = a.text or a.attrib.pop('text', '')  # type: ignore[union-attr]
                 b_t = b.text or b.attrib.pop('text', '')  # type: ignore[union-attr]
                 if 'pubDate' in case:
-                    self.assertEqual(parse(a_t), parse(b_t))  # type: ignore[arg-type]
+                    self.assertEqual(parse(a_t), parse(b_t), case)  # type: ignore[arg-type]
                 elif 'duration' in case:
-                    self.assertEqual(convert_to_seconds(a_t), convert_to_seconds(b_t))  # type: ignore[arg-type]
+                    self.assertEqual(convert_to_seconds(a_t), convert_to_seconds(b_t), case)  # type: ignore[arg-type]
                 else:
-                    self.assertEqual(a_t, b_t)
-                self.assertEqual(a.attrib, b.attrib)  # type: ignore[union-attr]
+                    self.assertEqual(a_t, b_t, case)
+                self.assertEqual(a.attrib, b.attrib, case)  # type: ignore[union-attr]
 
     def test_merge(self) -> None:
         ap = Podcast.from_rss(self.rss)
