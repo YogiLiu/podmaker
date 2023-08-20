@@ -3,7 +3,7 @@ from datetime import date
 from typing import IO, AnyStr
 from urllib.parse import ParseResult, urlparse
 
-from podmaker.config import OwnerConfig, PMConfig, S3Config
+from podmaker.config import OwnerConfig
 from podmaker.parser import YouTube
 from podmaker.storage import ObjectInfo, Storage
 from tests.util import network_available
@@ -40,17 +40,7 @@ class TestYoutube(unittest.TestCase):
         storage = MockStorage()
         self.youtube = YouTube(
             storage,
-            PMConfig(
-                owner=OwnerConfig(name='Podmaker', email='test@podmaker.dev'),
-                s3=S3Config(
-                    access_key='123',
-                    access_secret='456',
-                    bucket='podmaker',
-                    endpoint='http://localhost:9000',
-                    cdn_prefix='http://localhost:9000'
-                ),
-                sources=[],
-            )
+            OwnerConfig(name='Podmaker', email='test@podmaker.dev')
         )
 
     def test_fetch(self) -> None:
