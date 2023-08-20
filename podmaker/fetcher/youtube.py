@@ -72,6 +72,7 @@ class Playlist(Resource[Iterable[Episode]]):
         self.storage = storage
 
     def get(self) -> Iterable[Episode] | None:
+        logger.debug('fetch items')
         with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
             is_empty = True
             for entry in self.entries:
@@ -121,6 +122,7 @@ class Audio(Resource[Enclosure]):
         self.storage = storage
 
     def upload(self, key: str) -> tuple[ParseResult, int]:
+        logger.debug(f'upload audio: {key}')
         with TemporaryDirectory(prefix='podmaker_youtube_') as cache_dir:
             opts = {'paths': {'home': cache_dir}}
             opts.update(self.ydl_opts)
@@ -136,6 +138,7 @@ class Audio(Resource[Enclosure]):
 
     @lru_cache(maxsize=1)
     def get(self) -> Enclosure | None:
+        logger.debug(f'fetch audio: {self.info["id"]}')
         key = f'youtube/{self.info["id"]}.mp3'
         info = self.storage.check(key)
         if info:

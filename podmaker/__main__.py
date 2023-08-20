@@ -1,9 +1,10 @@
 import argparse
 import logging
+import sys
 from pathlib import Path
 from typing import Type
 
-from podmaker.config import PMConfig
+from podmaker.config import ConfigError, PMConfig
 from podmaker.processor import Processor, ScheduleProcessor
 from podmaker.storage import S3
 
@@ -16,7 +17,16 @@ def run() -> None:
     parser.add_argument('-c', '--conf', help='Path to config file.', type=Path, default=Path('config.toml'))
     args = parser.parse_args()
     config_path = args.conf
-    config = PMConfig.from_file(config_path)
+    try:
+        config = PMConfig.from_file(config_path)
+    except ConfigError as e:
+        logger.error(e)
+        sys.exit(1)
+
+    logging.basicConfig(
+        level=config.logging.level,
+        format='%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s',
+    )
     storage = S3(config.s3)
     processor_class: Type[Processor]
     if args.watch:

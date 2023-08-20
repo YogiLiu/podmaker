@@ -1,9 +1,12 @@
+import logging
 from urllib.parse import urlparse
 
 from podmaker.config import OwnerConfig, SourceConfig
 from podmaker.fetcher import Fetcher, YouTube
 from podmaker.rss import Podcast
 from podmaker.storage import Storage
+
+logger = logging.getLogger(__name__)
 
 _fetcher_instances: dict[str, Fetcher] = {}
 
@@ -25,4 +28,5 @@ class Task:
 
     def start(self) -> Podcast:
         url = urlparse(str(self._source.url))
+        logger.debug(f'task running: {self._source.name}')
         return self._fetcher.fetch(url)

@@ -3,6 +3,9 @@
 name = "podmaker"
 email = "admin@podmaker.dev"
 
+[logging]
+level = "INFO"
+
 [s3]
 access_key = "123"
 access_secret = "456"

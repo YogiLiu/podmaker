@@ -30,6 +30,7 @@ class S3(Storage):
         self.cdn_prefix = str(config.cdn_prefix)
 
     def _calculate_md5(self, data: IO[AnyStr]) -> str:
+        logger.debug('calculate md5')
         md5 = hashlib.md5()
         while True:
             chunk = data.read(self._md5_chunk_size)
@@ -45,6 +46,7 @@ class S3(Storage):
         return base64.b64encode(md5.digest()).decode()
 
     def put(self, data: IO[AnyStr], key: str, *, content_type: str = '') -> ParseResult:
+        logger.info(f'put: {key}')
         if key.startswith('/'):
             key = key[1:]
         md5 = self._calculate_md5(data)
@@ -54,6 +56,7 @@ class S3(Storage):
         return self.get_uri(key)
 
     def check(self, key: str) -> ObjectInfo | None:
+        logger.debug(f'check: {key}')
         if key.startswith('/'):
             key = key[1:]
         try:
@@ -72,6 +75,7 @@ class S3(Storage):
 
     @contextmanager
     def get(self, key: str) -> Iterator[IO[bytes]]:
+        logger.info(f'get: {key}')
         if key.startswith('/'):
             key = key[1:]
         with SpooledTemporaryFile(buffering=self._file_buffering) as f:
@@ -85,4 +89,5 @@ class S3(Storage):
                 f.seek(0)
                 yield f
             except ClientError:
+                logger.debug(f'not found: {key}')
                 yield EMPTY_FILE

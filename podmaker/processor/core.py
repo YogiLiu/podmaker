@@ -24,10 +24,12 @@ class Processor:
         with self._storage.get(key) as xml_file:
             xml = xml_file.read()
         if xml is None:
+            logger.info(f'no original file: {key}')
             return None
         return Podcast.from_rss(xml.decode('utf-8'))
 
     def _execute(self, source: SourceConfig) -> None:
+        logger.info(f'execute: {source.name}')
         try:
             key = f'{source.name}.xml'
             task = self._get_task(source)
