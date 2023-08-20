@@ -13,12 +13,12 @@ class ScheduleProcessor(Processor):
         scheduler = BlockingScheduler()
         try:
             for source in self._config.sources:
-                logger.info(f'Schedule job: {source.name}')
+                logger.info(f'Schedule job: {source.id}')
                 scheduler.add_job(
                     func=self._execute,
                     args=[source],
                     trigger=IntervalTrigger(hours=1),
-                    name=f'Job-{source.name}',
+                    name=f'Job-{source.id}',
                 )
             scheduler.start()
         except Exception as e:

@@ -31,9 +31,9 @@ class Processor:
         return Podcast.from_rss(xml.decode('utf-8'))
 
     def _execute(self, source: SourceConfig) -> None:
-        logger.info(f'execute: {source.name}')
+        logger.info(f'execute: {source.id}')
         try:
-            key = f'{quote(source.name)}.xml'
+            key = f'{quote(source.id)}.xml'
             task = self._get_task(source)
             with ThreadPoolExecutor() as executor:
                 original_f = executor.submit(self._fetch_original, key)
@@ -49,7 +49,7 @@ class Processor:
                 buf = BytesIO(original.bytes)
                 self._storage.put(buf, key, content_type='application/rss+xml')
         except Exception as e:
-            logger.error(f'{source.name}: {e}')
+            logger.error(f'{source.id}: {e}')
 
     def run(self) -> None:
         with ThreadPoolExecutor() as executor:

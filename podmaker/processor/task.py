@@ -28,5 +28,5 @@ class Task:
 
     def start(self) -> Podcast:
         url = urlparse(str(self._source.url))
-        logger.debug(f'task running: {self._source.name}')
+        logger.debug(f'task running: {self._source.id}')
         return self._fetcher.fetch(url)

@@ -17,10 +17,10 @@ cdn_prefix = "https://s3.amazonaws.com/"
 
 [[sources]]
 # used to generate the feed url
-name = "source_1"
+id = "source_1"
 # the url of the source
 url = "https://example.com/source_1/"
 
 [[sources]]
-name = "source_2"
+id = "source_2"
 url = "https://example.com/source_2/"

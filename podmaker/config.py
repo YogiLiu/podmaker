@@ -31,7 +31,7 @@ class S3Config(BaseModel):
 
 
 class SourceConfig(BaseModel):
-    name: str = Field(min_length=1, frozen=True)
+    id: str = Field(min_length=1, frozen=True)
     url: HttpUrl = Field(frozen=True)
 
 
