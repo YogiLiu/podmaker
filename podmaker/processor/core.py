@@ -8,6 +8,7 @@ from podmaker.config import PMConfig, SourceConfig
 from podmaker.processor.task import Task
 from podmaker.rss import Podcast
 from podmaker.storage import Storage
+from podmaker.storage.core import EMPTY_FILE
 
 logger = logging.getLogger(__name__)
 
@@ -22,10 +23,10 @@ class Processor:
 
     def _fetch_original(self, key: str) -> Podcast | None:
         with self._storage.get(key) as xml_file:
+            if xml_file == EMPTY_FILE:
+                logger.info(f'no original file: {key}')
+                return None
             xml = xml_file.read()
-        if xml is None:
-            logger.info(f'no original file: {key}')
-            return None
         return Podcast.from_rss(xml.decode('utf-8'))
 
     def _execute(self, source: SourceConfig) -> None:
