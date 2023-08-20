@@ -13,8 +13,10 @@ logger = logging.getLogger('podmaker')
 
 def run() -> None:
     parser = argparse.ArgumentParser(prog='podmaker', description='Podcast generator.')
-    parser.add_argument('-w', '--watch', help='Watch for changes.', type=bool, default=False)
-    parser.add_argument('-c', '--conf', help='Path to config file.', type=Path, default=Path('config.toml'))
+    parser.add_argument('-m', '--mode', help='Running mode (default: oneshot).', default='oneshot',
+                        choices=['oneshot', 'schedule'])
+    parser.add_argument('-c', '--conf', help='Path to config file (default: config.toml).', type=Path,
+                        default=Path('config.toml'))
     args = parser.parse_args()
     config_path = args.conf
     try:
@@ -25,13 +27,15 @@ def run() -> None:
 
     logging.basicConfig(
         level=config.logging.level,
-        format='%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s',
+        format='%(asctime)s %(levelname)s %(name)s %(message)s',
     )
     storage = S3(config.s3)
     processor_class: Type[Processor]
-    if args.watch:
+    if args.mode == 'schedule':
+        logger.info('running in schedule mode')
         processor_class = ScheduleProcessor
     else:
+        logger.info('running in oneshot mode')
         processor_class = Processor
     processor = processor_class(config=config, storage=storage)
     try:
