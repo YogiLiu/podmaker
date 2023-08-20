@@ -17,8 +17,9 @@ class OwnerConfig(BaseModel):
     email: EmailStr = Field(frozen=True)
 
 
-class LogConfig(BaseModel):
-    level: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR'] = Field('INFO', frozen=True)
+class AppConfig(BaseModel):
+    mode: Literal['oneshot', 'schedule'] = Field('oneshot', frozen=True)
+    loglevel: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR'] = Field('INFO', frozen=True)
 
 
 class S3Config(BaseModel):
@@ -42,7 +43,7 @@ class PMConfig(BaseModel):
     owner: OwnerConfig = Field(frozen=True)
     s3: S3Config = Field(frozen=True)
     sources: tuple[SourceConfig, ...] = Field(frozen=True)
-    logging: LogConfig = Field(default_factory=LogConfig, frozen=True)
+    app: AppConfig = Field(default_factory=AppConfig, frozen=True)
 
     @classmethod
     def from_file(cls, path: PurePath) -> PMConfig:
