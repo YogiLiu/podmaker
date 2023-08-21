@@ -2,7 +2,7 @@
 name = "podmaker"
 version = "0.2.1"
 description = "Convert online media into podcast feeds."
-license = "UNLICENSE"
+license = "Unlicense"
 authors = ["YogiLiu <YogiLiu@outlook.com>"]
 maintainers = ["YogiLiu <YogiLiu@outlook.com>"]
 readme = "README.md"
@@ -12,8 +12,7 @@ documentation = "https://github.com/YogiLiu/podmaker/blob/main/README.md"
 keywords = ["rss", "youtube", "podcast"]
 classifiers = [
     "Development Status :: 3 - Alpha",
-    "Environment :: Console",
-    "License :: OSI Approved :: The Unlicense (Unlicense)"
+    "Environment :: Console"
 ]
 
 [tool.poetry.dependencies]
