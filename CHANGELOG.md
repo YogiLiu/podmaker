@@ -1,3 +1,9 @@
+## 0.2.1 (2023-08-21)
+
+### Fix
+
+- **config**: quote id before used to generate storage key
+
 ## 0.2.0 (2023-08-21)
 
 ### Feat
