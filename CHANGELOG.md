@@ -1,3 +1,9 @@
+## 0.2.2 (2023-08-22)
+
+### Fix
+
+- **fetcher.youtube**: fetch image and link for episode
+
 ## 0.2.1 (2023-08-21)
 
 ### Fix
