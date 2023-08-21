@@ -1,8 +1,13 @@
 [app]
-mode = "oneshot"  # or "watch"
+# running mode, "oneshot" or "watch"
+# - oneshot: generate the feed and exit
+# - watch: generate the feed and watch for changes
+mode = "oneshot"
+
+# level of logging, "DEBUG", "INFO", "WARNING", "ERROR"
 loglevel = "INFO"
 
-# optional
+# optional, the admin of the feed
 [owner]
 name = "podmaker"
 email = "admin@podmaker.dev"
@@ -15,8 +20,9 @@ endpoint = "https://s3.amazonaws.com/"
 # must be public-read
 cdn_prefix = "https://s3.amazonaws.com/"
 
+# notice: the sources is an array, it must specify using `[[]]`
 [[sources]]
-# used to generate the feed url
+# used to generate the feed url, must be unique, prefer to use numbers, letters, space and underscores
 id = "source_1"
 # the url of the source
 url = "https://example.com/source_1/"

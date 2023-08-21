@@ -1,9 +1,19 @@
 [tool.poetry]
 name = "podmaker"
 version = "0.1.0"
-description = "Turn YouTube playlist into podcast feeds ."
+description = "Convert online media into podcast feeds."
+license = "UNLICENSE"
 authors = ["YogiLiu <YogiLiu@outlook.com>"]
+maintainers = ["YogiLiu <YogiLiu@outlook.com>"]
 readme = "README.md"
+homepage = "https://github.com/YogiLiu/podmaker"
+repository = "https://github.com/YogiLiu/podmaker"
+documentation = "https://github.com/YogiLiu/podmaker/blob/main/README.md"
+keywords = ["rss", "youtube", "podcast"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console"
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -45,3 +55,6 @@ ignore_missing_imports = true
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/YogiLiu/podmaker/issues"
