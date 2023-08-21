@@ -1,0 +1,12 @@
+[Unit]
+Description=Convert online media into podcast feeds.
+Documentation=https://github.com/YogiLiu/podmaker/blob/main/README.md
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/opt/podmaker/venv/bin/podmaker -c /opt/podmaker/config.toml
+
+[Install]
+WantedBy=multi-user.target
