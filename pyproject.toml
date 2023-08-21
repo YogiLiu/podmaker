@@ -12,7 +12,8 @@ documentation = "https://github.com/YogiLiu/podmaker/blob/main/README.md"
 keywords = ["rss", "youtube", "podcast"]
 classifiers = [
     "Development Status :: 3 - Alpha",
-    "Environment :: Console"
+    "Environment :: Console",
+    "License :: OSI Approved :: The Unlicense (Unlicense)"
 ]
 
 [tool.poetry.dependencies]
