@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
-from urllib.parse import quote
 
 from podmaker.config import PMConfig, SourceConfig
 from podmaker.processor.task import Task
@@ -33,7 +32,7 @@ class Processor:
     def _execute(self, source: SourceConfig) -> None:
         logger.info(f'execute: {source.id}')
         try:
-            key = f'{quote(source.id)}.xml'
+            key = source.get_storage_key('feed.rss')
             task = self._get_task(source)
             with ThreadPoolExecutor() as executor:
                 original_f = executor.submit(self._fetch_original, key)

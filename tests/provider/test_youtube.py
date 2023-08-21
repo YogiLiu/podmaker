@@ -5,7 +5,7 @@ from datetime import date
 from typing import IO, Any, AnyStr
 from urllib.parse import ParseResult, urlparse
 
-from podmaker.config import OwnerConfig
+from podmaker.config import OwnerConfig, SourceConfig
 from podmaker.fetcher import YouTube
 from podmaker.storage import ObjectInfo, Storage
 from tests.util import network_available
@@ -33,7 +33,10 @@ class MockStorage(Storage):
 
 @unittest.skipUnless(network_available('https://www.youtube.com'), 'network is not available')
 class TestYoutube(unittest.TestCase):
-    uri = urlparse('https://www.youtube.com/playlist?list=PLOU2XLYxmsILHvpAkROp2dXz-jQi4S4_y')
+    source = SourceConfig(
+        id='youtube',
+        url='https://www.youtube.com/playlist?list=PLOU2XLYxmsILHvpAkROp2dXz-jQi4S4_y'
+    )
 
     test_cases = [
         ('8ih7eHwPoxM', 'Introduction to ARCore Augmented Faces, Unity', date.fromisoformat('2019-09-12')),
@@ -49,20 +52,20 @@ class TestYoutube(unittest.TestCase):
         )
 
     def test_fetch(self) -> None:
-        podcast = self.youtube.fetch(self.uri)
-        self.assertEqual(self.uri, podcast.link)
+        podcast = self.youtube.fetch(self.source)
+        self.assertEqual(urlparse(str(self.source.url)), podcast.link)
         self.assertEqual('Introduction to ARCore Augmented Faces', podcast.title)
         self.assertIsNotNone(podcast.image.ensure())
         self.assertEqual(
             'Learn how to use ARCore’s Augmented Faces APIs to create face effects with Unity, Android, and iOS.',
             podcast.description,
         )
-        self.assertEqual('Podmaker', podcast.owner.name)
-        self.assertEqual('test@podmaker.dev', podcast.owner.email)
+        self.assertEqual('Podmaker', podcast.owner.name)  # type: ignore[union-attr]
+        self.assertEqual('test@podmaker.dev', podcast.owner.email)  # type: ignore[union-attr]
         self.assertEqual('Google for Developers', podcast.author)
         self.assertEqual([], podcast.categories)
         self.assertFalse(podcast.explicit)
-        self.assertIsNone(podcast.language)
+        self.assertEqual('en', podcast.language)
         for (idx, episode) in enumerate(podcast.items.ensure()):
             if idx >= len(self.test_cases):
                 break

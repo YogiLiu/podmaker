@@ -6,6 +6,7 @@ from typing import Generic, TypeVar
 from xml.etree.ElementTree import Element, fromstring, tostring
 
 from podmaker.rss.util.namespace import NamespaceGenerator
+from podmaker.rss.util.parse import XMLParser
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -42,9 +43,13 @@ class PlainResource(Resource[ResourceType]):
 
 # noinspection HttpUrlsUsage
 itunes = NamespaceGenerator('itunes', 'http://www.itunes.com/dtds/podcast-1.0.dtd')
+# noinspection HttpUrlsUsage
+content = NamespaceGenerator('content', 'http://purl.org/rss/1.0/modules/content/')
 
 
-class RSSComponent(metaclass=ABCMeta):
+class RSSComponent(XMLParser, metaclass=ABCMeta):
+    namespace = dict(**itunes.namespace, **content.namespace)
+
     @property
     @abstractmethod
     def xml(self) -> Element:

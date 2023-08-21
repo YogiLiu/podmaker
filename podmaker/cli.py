@@ -30,12 +30,11 @@ def run() -> None:
     )
     storage = S3(config.s3)
     processor_class: Type[Processor]
-    if config.app.mode == 'schedule':
-        logger.info('running in schedule mode')
+    if config.app.mode == 'watch':
         processor_class = ScheduleProcessor
     else:
-        logger.info('running in oneshot mode')
         processor_class = Processor
+    logger.info(f'running in {config.app.mode} mode')
     processor = processor_class(config=config, storage=storage)
     try:
         processor.run()

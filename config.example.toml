@@ -1,9 +1,9 @@
 [app]
-mode = "oneshot"
+mode = "oneshot"  # or "watch"
 loglevel = "INFO"
 
-[owner]
 # optional
+[owner]
 name = "podmaker"
 email = "admin@podmaker.dev"
 

@@ -19,7 +19,7 @@ class OwnerConfig(BaseModel):
 
 # noinspection PyNestedDecorators
 class AppConfig(BaseModel):
-    mode: Literal['oneshot', 'schedule'] = Field('oneshot', frozen=True)
+    mode: Literal['oneshot', 'watch'] = Field('oneshot', frozen=True)
     loglevel: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR'] = Field('INFO', frozen=True)
 
     @field_validator('mode', mode='before')
@@ -47,13 +47,16 @@ class SourceConfig(BaseModel):
     id: str = Field(min_length=1, frozen=True)
     url: HttpUrl = Field(frozen=True)
 
+    def get_storage_key(self, key: str) -> str:
+        return f'{self.id}/{key}'
+
 
 class ConfigError(Exception):
     pass
 
 
 class PMConfig(BaseModel):
-    owner: OwnerConfig = Field(frozen=True)
+    owner: Optional[OwnerConfig] = Field(None, frozen=True)
     s3: S3Config = Field(frozen=True)
     sources: tuple[SourceConfig, ...] = Field(frozen=True)
     app: AppConfig = Field(default_factory=AppConfig, frozen=True)

@@ -22,23 +22,22 @@ class Enclosure(RSSComponent):
 
     @property
     def xml(self) -> Element:
-        return Element(
+        return self._el_creator(
             'enclosure',
-            {'url': self.url.geturl(), 'length': str(self.length), 'type': self.type}
+            attrib={'url': self.url.geturl(), 'length': str(self.length), 'type': self.type}
         )
 
     @classmethod
     def from_xml(cls, el: Element) -> Self:
-        url = urlparse(el.get('url'))
-        length_str = el.get('length')
-        if length_str is None:
-            raise ValueError('length is required')
-        length = int(length_str)
-        content_type = el.get('type')
-        if content_type is None:
-            raise ValueError('type is required')
+        url = urlparse(cls._parse_required_attrib(el, '.', 'url'))
+        length_str = cls._parse_required_attrib(el, '.', 'length')
+        try:
+            length = int(length_str)
+        except ValueError:
+            raise ValueError(f'length must be int: {length_str}')
+        content_type = cls._parse_required_attrib(el, '.', 'type')
         return cls(
-            url,  # type: ignore[arg-type]
+            url,
             length,
             content_type
         )

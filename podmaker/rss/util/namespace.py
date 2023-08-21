@@ -16,6 +16,8 @@ class NamespaceGenerator:
     def __call__(self, tag: str) -> QName:
         return QName(self.url, tag)
 
-    def el(self, tag: str, attrib: dict[str, str] | None = None, **extra: str) -> Element:
-        attrib = attrib or {}
-        return Element(self(tag).text, attrib, **extra)
+    def el(self, tag: str, *, text: str| None = None, attrib: dict[str, str] | None = None) -> Element:
+        el = Element(self(tag).text, attrib or {})
+        if text is not None:
+            el.text = text
+        return el

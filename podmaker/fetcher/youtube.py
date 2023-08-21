@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import os
 import threading
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from tempfile import TemporaryDirectory
 from typing import Any, Iterable
@@ -11,7 +11,7 @@ from urllib.parse import ParseResult, urlparse
 
 import yt_dlp
 
-from podmaker.config import OwnerConfig
+from podmaker.config import OwnerConfig, SourceConfig
 from podmaker.fetcher import Fetcher
 from podmaker.rss import Enclosure, Episode, Owner, Podcast, Resource
 from podmaker.storage import Storage
@@ -23,28 +23,32 @@ _lock = threading.Lock()
 
 
 class YouTube(Fetcher):
-    def __init__(self, storage: Storage, owner: OwnerConfig):
+    def __init__(self, storage: Storage, owner: OwnerConfig | None):
         self.storage = storage
         self.ydl_opts = {'logger': logging.getLogger('yt_dlp')}
         self.owner = owner
 
-    def fetch(self, uri: ParseResult) -> Podcast:
+    def fetch(self, source: SourceConfig) -> Podcast:
         with _lock:
-            if uri.path == "/playlist":
-                return self.fetch_playlist(uri.geturl())
-            raise ValueError(f'unsupported url: {uri}')
+            if source.url.path == "/playlist":
+                return self.fetch_playlist(source)
+            raise ValueError(f'unsupported url: {source.url}')
 
-    def fetch_playlist(self, url: str) -> Podcast:
-        logger.info(f'fetch playlist: {url}')
+    def fetch_playlist(self, source: SourceConfig) -> Podcast:
+        logger.info(f'fetch playlist: {source.url}')
         with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
-            playlist = ydl.extract_info(url, download=False, process=False)
+            playlist = ydl.extract_info(str(source.url), download=False, process=False)
+            if self.owner:
+                owner = Owner(name=self.owner.name, email=self.owner.email)
+            else:
+                owner = None
             podcast = Podcast(
-                items=Playlist(playlist.get('entries', []), self.ydl_opts, self.storage),
+                items=Playlist(playlist.get('entries', []), self.ydl_opts, self.storage, source),
                 link=urlparse(playlist['webpage_url']),
                 title=playlist['title'],
                 image=PlaylistThumbnail(playlist['thumbnails']),
                 description=playlist['description'],
-                owner=Owner(name=self.owner.name, email=self.owner.email),
+                owner=owner,
                 author=playlist['uploader'],
                 categories=playlist.get('tags', []),
             )
@@ -52,10 +56,12 @@ class YouTube(Fetcher):
 
 
 class Playlist(Resource[Iterable[Episode]]):
-    def __init__(self, entries: Iterable[dict[str, Any]], ydl_opts: dict[str, Any], storage: Storage):
+    def __init__(
+            self, entries: Iterable[dict[str, Any]], ydl_opts: dict[str, Any], storage: Storage, source: SourceConfig):
         self.entries = entries
         self.ydl_opts = ydl_opts
         self.storage = storage
+        self.source = source
 
     def get(self) -> Iterable[Episode] | None:
         logger.debug('fetch items')
@@ -64,10 +70,10 @@ class Playlist(Resource[Iterable[Episode]]):
             for entry in self.entries:
                 is_empty = False
                 video_info = ydl.extract_info(entry['url'], download=False)
-                upload_at = datetime.strptime(video_info['upload_date'], '%Y%m%d')
+                upload_at = datetime.strptime(video_info['upload_date'], '%Y%m%d').replace(tzinfo=timezone.utc)
                 logger.info(f'fetch item: {video_info["id"]}')
                 yield Episode(
-                    enclosure=Audio(video_info, self.ydl_opts, self.storage),
+                    enclosure=Audio(video_info, self.ydl_opts, self.storage, self.source),
                     title=video_info['title'],
                     description=video_info['description'],
                     guid=video_info['id'],
@@ -95,7 +101,7 @@ class Audio(Resource[Enclosure]):
     timeout = 30
     max_retries = 3
 
-    def __init__(self, info: dict[str, Any], ydl_opts: dict[str, Any], storage: Storage):
+    def __init__(self, info: dict[str, Any], ydl_opts: dict[str, Any], storage: Storage, source: SourceConfig):
         self.info = info
         self.ydl_opts: dict[str, Any] = {
             'format': 'ba',
@@ -106,6 +112,7 @@ class Audio(Resource[Enclosure]):
         }
         self.ydl_opts.update(ydl_opts)
         self.storage = storage
+        self.source = source
 
     def upload(self, key: str) -> tuple[ParseResult, int]:
         logger.debug(f'upload audio: {key}')
@@ -125,7 +132,7 @@ class Audio(Resource[Enclosure]):
     @lru_cache(maxsize=1)
     def get(self) -> Enclosure | None:
         logger.debug(f'fetch audio: {self.info["id"]}')
-        key = f'youtube/{self.info["id"]}.mp3'
+        key = self.source.get_storage_key(f'youtube/{self.info["id"]}.mp3')
         info = self.storage.check(key)
         if info:
             logger.info(f'audio already exists: {key}')

@@ -2,18 +2,18 @@
 <rss version="2.0"
     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
   <channel>
-    <title>Dafna's Zebra Podcast</title>
+    <title>Dafna 的斑马饲养播客</title>
     <itunes:owner>
         <itunes:email>dafna@example.com</itunes:email>
     </itunes:owner>
     <itunes:author>Dafna</itunes:author>
-    <description>A pet-owner's guide to the popular striped equine.</description>
+    <description>一个宠物主人关于饲养人气条纹马的指南</description>
     <itunes:image href="https://www.example.com/podcasts/dafnas-zebras/img/dafna-zebra-pod-logo.jpg"/>
-    <language>en-us</language>
+    <language>zh-cn</language>
     <link>https://www.example.com/podcasts/dafnas-zebras/</link>
     <item>
-      <title>Top 10 myths about caring for a zebra</title>
-      <description>Here are the top 10 misunderstandings about the care, feeding, and breeding of these lovable striped animals.</description>
+      <title>关于饲养斑马的十大误区</title>
+      <description>这里介绍了关于照顾、喂养和繁殖可爱条纹动物的十大误区。</description>
       <pubDate>Tue, 14 Mar 2017 12:00:00 GMT</pubDate>
       <enclosure url="https://www.example.com/podcasts/dafnas-zebras/audio/toptenmyths.mp3"
                  type="audio/mpeg" length="34216300"/>
@@ -21,13 +21,13 @@
       <guid isPermaLink="false">dzpodtop10</guid>
     </item>
     <item>
-      <title>Keeping those stripes neat and clean</title>
-      <description>Keeping your zebra clean is time consuming, but worth the effort.</description>
+      <title>让斑马保持整洁干净</title>
+      <description>让斑马保持干净非常耗时，但付出的努力是值得的。</description>
       <pubDate>Fri, 24 Feb 2017 12:00:00 GMT</pubDate>
       <enclosure url="https://www.example.com/podcasts/dafnas-zebras/audio/cleanstripes.mp3"
                  type="audio/mpeg" length="26004388"/>
       <itunes:duration>22:48</itunes:duration>
-      <guid isPermaLink="false">dzpodclean</guid>
+      <guid>dzpodclean</guid>
     </item>
   </channel>
 </rss>

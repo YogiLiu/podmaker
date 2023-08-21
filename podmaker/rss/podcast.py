@@ -10,7 +10,6 @@ from xml.etree.ElementTree import Element
 
 from podmaker.rss import Episode, Resource
 from podmaker.rss.core import PlainResource, RSSDeserializer, RSSSerializer, itunes
-from podmaker.rss.util.parse import XMLParser
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -32,7 +31,7 @@ class Owner:
 
 
 @dataclass
-class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
+class Podcast(RSSSerializer, RSSDeserializer):
     # Defines an episodes. At least one element in the items.
     items: Resource[Iterable[Episode]]
     # Fully-qualified URL of the homepage of the podcast.
@@ -43,23 +42,23 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
     image: Resource[ParseResult]
     # A plaintext description of the podcast.
     description: str
-    # Manager's email for the podcast.
-    owner: Owner
     # Text name(s) of the author(s) of this podcast.
     # This need not be the same as the owner value.
     author: str
+    # Manager's email for the podcast.
+    owner: Owner | None = None
     # The general topic of the podcast.
     categories: list[str] = field(default_factory=list)
     # Indicates whether the podcast is explicit language or adult content.
     explicit: bool = False
     # The two-letter language code of the podcast as defined by ISO 639-1.
     # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-    language: str | None = None
+    language: str = 'en'
 
     @property
     def xml(self) -> Element:
-        el = Element('rss', {'version': '2.0'})
-        channel = Element('channel')
+        el = self._el_creator('rss', attrib={'version': '2.0'})
+        channel = self._el_creator('channel')
         el.append(channel)
         channel.append(self._link_el)
         channel.append(self._title_el)
@@ -67,13 +66,13 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
         channel.append(self._image_el)
         channel.append(self._description_el)
         channel.append(self._summary_el)
-        channel.append(self._owner_el)
+        if self.owner:
+            channel.append(self._owner_el)
         channel.append(self._author_el)
         for category in self._category_el:
             channel.append(category)
         channel.append(self._explicit_el)
-        if self.language:
-            channel.append(self._language_el)
+        channel.append(self._language_el)
         for item in self._items_el:
             channel.append(item)
         return el
@@ -81,23 +80,23 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
     @classmethod
     def from_xml(cls, el: Element) -> Self:
         items = cls._parse_items(el)
-        link = urlparse(cls._parse_required(el, '.channel/link'))
-        title = cls._parse_required(el, '.channel/title')
+        link = urlparse(cls._parse_required_text(el, '.channel/link'))
+        title = cls._parse_required_text(el, '.channel/title')
         image = cls._parse_image(el)
-        description = cls._parse_required(el, '.channel/description')
+        description = cls._parse_required_text(el, '.channel/description')
         owner = cls._parse_owner(el)
-        author = cls._parse_required(el, f'.channel/{itunes("author")}')
+        author = cls._parse_required_text(el, f'.channel/{itunes("author")}')
         categories = cls._parse_categories(el)
-        explicit = cls._parse_optional(el, f'.channel/{itunes("explicit")}') == 'yes'
-        language = cls._parse_optional(el, '.channel/language')
+        explicit = cls._parse_optional_text(el, f'.channel/{itunes("explicit")}') == 'yes'
+        language = cls._parse_optional_text(el, '.channel/language') or 'en'
         return cls(
             items,
             link,
             title,
             image,
             description,
-            owner,
             author,
+            owner,
             categories,
             explicit,
             language
@@ -136,17 +135,17 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
         return True
 
     @classmethod
-    def _parse_owner(cls, el: Element) -> Owner:
-        owner_el = el.find(f'.channel/{itunes("owner")}', itunes.namespace)
+    def _parse_owner(cls, el: Element) -> Owner | None:
+        owner_el = cls._parse_optional_el(el, f'.channel/{itunes("owner")}')
         if owner_el is None:
-            raise ValueError('owner is required')
-        owner_name = cls._parse_optional(owner_el, f'.{itunes("name")}')
-        owner_email = cls._parse_required(owner_el, f'.{itunes("email")}')
+            return None
+        owner_name = cls._parse_optional_text(owner_el, f'.{itunes("name")}')
+        owner_email = cls._parse_required_text(owner_el, f'.{itunes("email")}')
         return Owner(owner_email, owner_name)
 
-    @staticmethod
-    def _parse_items(el: Element) -> Resource[Iterable[Episode]]:
-        item_els = el.findall('.channel/item')
+    @classmethod
+    def _parse_items(cls, el: Element) -> Resource[Iterable[Episode]]:
+        item_els = cls._parse_els(el, '.channel/item')
         if not item_els:
             raise ValueError('items is required')
         items = []
@@ -156,23 +155,30 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
             raise ValueError('items is required')
         return PlainResource(items)
 
-    @staticmethod
-    def _parse_categories(el: Element) -> list[str]:
+    @classmethod
+    def _parse_categories(cls, el: Element) -> list[str]:
         categories = []
-        for category_el in el.findall(f'.channel/{itunes("category")}', itunes.namespace):
+        for category_el in cls._parse_els(el, f'.channel/{itunes("category")}'):
             if category_el.text:
-                categories.append(category_el.text)
+                categories.append(category_el.text.strip())
+            elif category_el.get('text'):
+                categories.append(category_el.get('text')) # type: ignore[arg-type]
         return categories
 
-    @staticmethod
-    def _parse_image(el: Element) -> Resource[ParseResult]:
-        image_el = el.find(f'.channel/{itunes("image")}', itunes.namespace)
-        if image_el is not None and image_el.get('href'):
-            return PlainResource(urlparse(image_el.get('href')))  # type: ignore[arg-type]
-        image_url = el.findtext('.channel/image/url')
-        if not image_url:
-            raise ValueError('image or itunes:image is required')
+    @classmethod
+    def _parse_image(cls, el: Element) -> Resource[ParseResult]:
+        href = cls._parse_optional_attrib(el, f'.channel/{itunes("image")}', 'href')
+        if href:
+            return PlainResource(urlparse(href))
+        image_url = cls._parse_required_text(el, '.channel/image/url')
         return PlainResource(urlparse(image_url))
+
+    @property
+    def _generator_el(self) -> Element:
+        el = self._el_creator('generator')
+        el.append(self._el_creator('name', 'podmaker'))
+        el.append(self._el_creator('link', 'https://github.com/YogiLiu/podmaker'))
+        return el
 
     @property
     def _items_el(self) -> Iterable[Element]:
@@ -193,7 +199,7 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
 
     @property
     def _itunes_image_el(self) -> Element:
-        return itunes.el('image', href=self.image.ensure().geturl())
+        return itunes.el('image', attrib={'href': self.image.ensure().geturl()})
 
     @property
     def _image_el(self) -> Element:
@@ -213,6 +219,8 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
 
     @property
     def _owner_el(self) -> Element:
+        if self.owner is None:
+            raise ValueError('empty owner field')
         el = itunes.el('owner')
         if self.owner.name:
             el.append(itunes.el('name', text=self.owner.name))
@@ -228,13 +236,13 @@ class Podcast(RSSSerializer, RSSDeserializer, XMLParser):
         for category in self.categories:
             parsed_category = self._parse_category(category)
             if parsed_category is not None:
-                yield itunes.el('category', text=parsed_category)
+                yield itunes.el('category', attrib={'text': parsed_category})
 
     @staticmethod
     def _parse_category(category: str) -> str | None:
         if not _category_pattern.match(category):
             return None
-        return category.replace('&', '&amp;')
+        return category.capitalize()
 
     @property
     def _explicit_el(self) -> Element:

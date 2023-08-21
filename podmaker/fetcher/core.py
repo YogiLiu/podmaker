@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
-from urllib.parse import ParseResult
 
+from podmaker.config import SourceConfig
 from podmaker.rss import Podcast
 
 
 class Fetcher(ABC):
     @abstractmethod
-    def fetch(self, uri: ParseResult) -> Podcast:
+    def fetch(self, source: SourceConfig) -> Podcast:
         raise NotImplementedError
