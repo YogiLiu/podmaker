@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 from pathlib import PurePath
 from typing import AnyStr, Literal, Optional
+from urllib.parse import quote
 
 from pydantic import BaseModel, EmailStr, Field, HttpUrl, ValidationError, field_validator
 
@@ -48,7 +49,7 @@ class SourceConfig(BaseModel):
     url: HttpUrl = Field(frozen=True)
 
     def get_storage_key(self, key: str) -> str:
-        return f'{self.id}/{key}'
+        return f'{quote(self.id)}/{key}'
 
 
 class ConfigError(Exception):
