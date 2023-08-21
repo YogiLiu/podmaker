@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from email.utils import format_datetime, parsedate_to_datetime
 from typing import Any
+from urllib.parse import ParseResult, urlparse
 from xml.etree.ElementTree import Element
 
 from podmaker.rss import Enclosure, Resource
@@ -38,9 +39,9 @@ class Episode(RSSComponent):
     # https://www.rfc-editor.org/rfc/rfc822#section-5.1
     pub_date: datetime | None = None
     # An episode link URL.
-    link: str | None = None
+    link: ParseResult | None = None
     # The episode artwork.
-    image: str | None = None
+    image: Resource[ParseResult] | None = None
 
     @property
     def xml(self) -> Element:
@@ -81,8 +82,16 @@ class Episode(RSSComponent):
         guid = cls._parse_optional_text(el, '.guid')
         duration = cls._parse_duration(el)
         pub_date = cls._parse_pub_date(el)
-        link = cls._parse_optional_text(el, '.link')
-        image = cls._parse_optional_attrib(el, f'.{itunes("image")}', 'href')
+        link_str = cls._parse_optional_text(el, '.link')
+        if link_str is not None:
+            link = urlparse(link_str)
+        else:
+            link = None
+        image_url = cls._parse_optional_attrib(el, f'.{itunes("image")}', 'href')
+        if image_url is not None:
+            image = PlainResource(urlparse(image_url))
+        else:
+            image = None
         return cls(enclosure, title, description, explicit, guid, duration, pub_date, link, image)
 
     def merge(self, other: Self) -> bool:
@@ -204,12 +213,12 @@ class Episode(RSSComponent):
 
     @property
     def _link_el(self) -> Element:
-        if self.pub_date is None:
+        if self.link is None:
             raise ValueError('empty link field')
-        return self._el_creator('link', self.link)
+        return self._el_creator('link', self.link.geturl())
 
     @property
     def _image_el(self) -> Element:
         if self.image is None:
             raise ValueError('empty image field')
-        return itunes.el('image', attrib={'href': self.image})
+        return itunes.el('image', attrib={'href': self.image.ensure().geturl()})

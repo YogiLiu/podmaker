@@ -75,5 +75,6 @@ class TestYoutube(unittest.TestCase):
             self.assertIsNotNone(episode.pub_date)
             if episode.pub_date is not None:
                 self.assertEqual(test_case[2], episode.pub_date.date())
-            self.assertIsNotNone(podcast.image.ensure())
+            self.assertIsNotNone(episode.link)
+            self.assertIsNotNone(episode.image.ensure())  # type: ignore[union-attr]
             self.assertEqual(urlparse('https://example.com'), episode.enclosure.ensure().url)

@@ -14,6 +14,7 @@ import yt_dlp
 from podmaker.config import OwnerConfig, SourceConfig
 from podmaker.fetcher import Fetcher
 from podmaker.rss import Enclosure, Episode, Owner, Podcast, Resource
+from podmaker.rss.core import PlainResource
 from podmaker.storage import Storage
 
 logger = logging.getLogger(__name__)
@@ -79,6 +80,8 @@ class Playlist(Resource[Iterable[Episode]]):
                     guid=video_info['id'],
                     duration=timedelta(seconds=video_info['duration']),
                     pub_date=upload_at,
+                    link=urlparse(video_info['webpage_url']),
+                    image=PlainResource(urlparse(video_info['thumbnail'])),
                 )
             if is_empty:
                 return None
