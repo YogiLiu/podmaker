@@ -13,14 +13,16 @@ class ScheduleProcessor(Processor):
     def run(self) -> None:
         scheduler = BlockingScheduler()
         try:
-            for source in self._config.sources:
-                logger.info(f'Schedule job: {source.id}')
+            for task in self._tasks:
+                logger.info(f'Schedule job: {task.id}, it well be run after 1 minute and every 1 hour')
+                task.before = lambda: scheduler.pause_job(task.id)
+                task.after = lambda: scheduler.resume_job(task.id)
                 scheduler.add_job(
-                    func=self._execute,
-                    args=[source],
+                    func=task.execute,
                     trigger=IntervalTrigger(hours=1),
                     next_run_time=datetime.now() + timedelta(minutes=1),
-                    name=f'Job-{source.id}',
+                    id=task.id,
+                    name=f'Job-{task.id}',
                 )
             scheduler.start()
         except Exception as e:

@@ -46,12 +46,12 @@ class S3(Storage):
         return base64.b64encode(md5.digest()).decode()
 
     def put(self, data: IO[AnyStr], key: str, *, content_type: str = '') -> ParseResult:
-        logger.info(f'put: {key}')
         if key.startswith('/'):
             key = key[1:]
         md5 = self._calculate_md5(data)
-        logger.info(f'upload: {key} ({md5})')
+        logger.info(f'upload: {key} (md5: {md5})')
         self.bucket.put_object(Key=key, ContentMD5=md5, Body=data, ContentType=content_type)
+        logger.info(f'uploaded: {key}')
         data.seek(0)
         return self.get_uri(key)
 
