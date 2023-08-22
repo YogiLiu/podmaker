@@ -174,7 +174,7 @@
                     </div>
                 </footer>
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"/>
-                <script src="./script.js"/>
+                <script src="https://cdn.jsdelivr.net/gh/YogiLiu/podmaker/asset/script.js"/>
             </body>
         </html>
     </xsl:template>
