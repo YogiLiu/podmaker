@@ -1,3 +1,23 @@
+## 0.3.0 (2023-08-23)
+
+### BREAKING CHANGE
+
+- changes for config file
+
+### Feat
+
+- **rss**: add stylesheet
+- add exit signal
+
+### Fix
+
+- **rss.core**: fix encoding of rss bytes
+- **config**: change s3.cdn_prefix to s3.public_endpoint
+
+### Refactor
+
+- **processor**: move execution to Task class, and support task hook
+
 ## 0.2.2 (2023-08-22)
 
 ### Fix
