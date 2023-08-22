@@ -60,6 +60,7 @@ class Podcast(RSSSerializer, RSSDeserializer):
         el = self._el_creator('rss', attrib={'version': '2.0'})
         channel = self._el_creator('channel')
         el.append(channel)
+        channel.append(self._generator_el)
         channel.append(self._link_el)
         channel.append(self._title_el)
         channel.append(self._itunes_image_el)

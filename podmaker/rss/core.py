@@ -93,7 +93,9 @@ class RSSComponent(XMLParser, metaclass=ABCMeta):
 
 
 # https://www.w3.org/TR/xml/#sec-pi
-_pis = '<?xml version="1.0" encoding="UTF-8"?>\n'
+_pis = '''<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="https://cdn.jsdelivr.net/gh/YogiLiu/podmaker/asset/style.xsl" type="text/xsl"?>
+'''
 _pis_bytes = _pis.encode('utf-8')
 
 
