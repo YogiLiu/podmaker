@@ -1,3 +1,10 @@
+## 0.3.1 (2023-08-23)
+
+### Fix
+
+- **peocessor.task**: fix mime
+- **asset**: fix script url
+
 ## 0.3.0 (2023-08-23)
 
 ### BREAKING CHANGE
