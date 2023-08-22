@@ -105,7 +105,7 @@ class RSSSerializer(RSSComponent, metaclass=ABCMeta):
 
     @property
     def bytes(self) -> bytes:
-        s = tostring(self.xml)
+        s = tostring(self.xml, encoding='utf-8')  # type: bytes
         return _pis_bytes + s
 
 
