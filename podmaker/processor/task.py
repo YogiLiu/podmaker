@@ -1,22 +1,24 @@
 from __future__ import annotations
 
 import logging
-from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
-from typing import Callable
+from typing import Any, Callable
 from uuid import uuid4
 
 from podmaker.config import OwnerConfig, SourceConfig
 from podmaker.fetcher import Fetcher, YouTube
 from podmaker.rss import Podcast
 from podmaker.storage import EMPTY_FILE, Storage
+from podmaker.util import ExitSignalError
 
 logger = logging.getLogger(__name__)
 
 _fetcher_instances: dict[str, Fetcher] = {}
 
+Hook = Callable[[str], None]
 
-def _do_nothing() -> None:
+
+def _do_nothing(*_: Any) -> None:
     pass
 
 
@@ -28,8 +30,8 @@ class Task:
         self._storage = storage
         self._owner = owner
         self._fetcher = self._get_fetcher()
-        self.before: Callable[[], None] = _do_nothing
-        self.after: Callable[[], None] = _do_nothing
+        self.before: Hook = _do_nothing
+        self.after: Hook = _do_nothing
 
     @property
     def id(self) -> str:
@@ -51,18 +53,12 @@ class Task:
             xml = xml_file.read()
         return Podcast.from_rss(xml.decode('utf-8'))
 
-    def _fetch_source(self) -> Podcast:
-        return self._fetcher.fetch(self._source)
-
     def _execute(self) -> None:
         logger.info(f'execute task: {self.id}')
         try:
             key = self._source.get_storage_key('feed.rss')
-            with ThreadPoolExecutor() as executor:
-                original_f = executor.submit(self._fetch_original, key)
-                source_f = executor.submit(self._fetch_source)
-                original_pod = original_f.result()  # type: Podcast | None
-                source_pod = source_f.result()
+            original_pod = self._fetch_original(key)
+            source_pod = self._fetcher.fetch(self._source)
             if original_pod:
                 has_changed = original_pod.merge(source_pod)
             else:
@@ -74,12 +70,14 @@ class Task:
                 self._storage.put(buf, key, content_type='plain/xml; charset=utf-8')
             else:
                 logger.info(f'no change: {self._source.id}')
-        except Exception as e:
-            logger.error(f'task {self.id} execute failed: {e}')
+        except ExitSignalError as e:
+            logger.warning(f'task ({self.id}) cancelled due to {e}')
+        except BaseException as e:
+            logger.error(f'task execute failed: {e} task: {self.id}')
 
     def execute(self) -> None:
         logger.debug(f'task running: {self._source.id}')
-        self.before()
+        self.before(self.id)
         self._execute()
-        self.after()
-        logger.debug(f'task finished: {self._source.id}')
+        logger.debug(f'task finished: {self.id}')
+        self.after(self.id)

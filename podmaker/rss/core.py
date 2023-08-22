@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import sys
 from abc import ABCMeta, abstractmethod
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 from xml.etree.ElementTree import Element, fromstring, tostring
 
 from podmaker.rss.util.namespace import NamespaceGenerator
 from podmaker.rss.util.parse import XMLParser
+from podmaker.util import exit_signal
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -26,6 +27,11 @@ class Resource(Generic[ResourceType], metaclass=ABCMeta):
         if resource is None:
             raise ValueError('Resource not found')
         return resource
+
+    def __getattribute__(self, name: Any) -> Any:
+        if name == 'get':
+            exit_signal.check()
+        return super().__getattribute__(name)
 
 
 class PlainResource(Resource[ResourceType]):
