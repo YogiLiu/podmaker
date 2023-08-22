@@ -67,7 +67,7 @@ class Task:
             if has_changed:
                 logger.info(f'update: {self._source.id}')
                 buf = BytesIO(original_pod.bytes)
-                self._storage.put(buf, key, content_type='plain/xml; charset=utf-8')
+                self._storage.put(buf, key, content_type='text/xml; charset=utf-8')
             else:
                 logger.info(f'no change: {self._source.id}')
         except ExitSignalError as e:
