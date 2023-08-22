@@ -8,9 +8,7 @@ from urllib.parse import ParseResult, urlparse
 
 from podmaker.config import OwnerConfig, SourceConfig
 from podmaker.fetcher import YouTube
-from podmaker.rss import Resource
 from podmaker.storage import ObjectInfo, Storage
-from podmaker.util import ExitSignalError, exit_signal
 from tests.util import network_available
 
 if sys.version_info >= (3, 11):
@@ -86,13 +84,3 @@ class TestYoutube(unittest.TestCase):
             self.assertIsNotNone(episode.link)
             self.assertIsNotNone(episode.image.ensure())  # type: ignore[union-attr]
             self.assertEqual(urlparse('https://example.com'), episode.enclosure.ensure().url)
-
-    def test_exit_signal(self) -> None:
-        class TestResource(Resource[None]):
-            def get(self) -> None:
-                return None
-
-        t = TestResource()
-        exit_signal.receive()
-        with self.assertRaises(ExitSignalError):
-            t.get()

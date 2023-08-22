@@ -6,7 +6,7 @@ import logging
 from contextlib import contextmanager
 from tempfile import SpooledTemporaryFile
 from typing import IO, AnyStr, Iterator
-from urllib.parse import ParseResult, urlparse
+from urllib.parse import ParseResult, urljoin, urlparse
 
 import boto3
 from botocore.exceptions import ClientError
@@ -27,7 +27,7 @@ class S3(Storage):
             's3', endpoint_url=str(config.endpoint), aws_access_key_id=config.access_key,
             aws_secret_access_key=config.access_secret)
         self.bucket = self.s3.Bucket(config.bucket)
-        self.cdn_prefix = str(config.cdn_prefix)
+        self.public_endpoint = str(config.public_endpoint)
 
     def _calculate_md5(self, data: IO[AnyStr]) -> str:
         logger.debug('calculate md5')
@@ -70,8 +70,8 @@ class S3(Storage):
             return None
 
     def get_uri(self, key: str) -> ParseResult:
-        prefix = self.cdn_prefix.removesuffix('/')
-        return urlparse(f'{prefix}/{key}')
+        url = urljoin(self.public_endpoint, key)
+        return urlparse(url)
 
     @contextmanager
     def get(self, key: str) -> Iterator[IO[bytes]]:

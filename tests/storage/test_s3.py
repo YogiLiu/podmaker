@@ -54,7 +54,7 @@ class TestS3(unittest.TestCase):
                 access_secret='456',
                 bucket='podmaker',
                 endpoint='http://localhost:9000',
-                cdn_prefix='http://localhost:9000'
+                public_endpoint='http://localhost:9000'
             )
         )
         self.file = BytesIO()

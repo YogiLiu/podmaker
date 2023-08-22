@@ -41,7 +41,7 @@ class S3Config(BaseModel):
     access_secret: str = Field(min_length=1, frozen=True)
     bucket: str = Field(min_length=1, frozen=True)
     endpoint: HttpUrl = Field(frozen=True)
-    cdn_prefix: HttpUrl = Field(frozen=True)
+    public_endpoint: HttpUrl = Field(frozen=True)
 
 
 class SourceConfig(BaseModel):

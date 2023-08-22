@@ -18,7 +18,7 @@ access_secret = "456"
 bucket = "podmake"
 endpoint = "https://s3.amazonaws.com/"
 # must be public-read
-cdn_prefix = "https://s3.amazonaws.com/"
+public_endpoint = "https://s3.amazonaws.com/"
 
 # notice: the sources is an array, it must specify using `[[]]`
 [[sources]]
