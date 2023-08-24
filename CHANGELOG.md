@@ -1,3 +1,15 @@
+## 0.4.0 (2023-08-24)
+
+### Feat
+
+- **fetcher**: support youtube channel
+
+### Fix
+
+- **rss.core**: remove stylesheet
+- **fetcher.youtube**: catch download error
+- **rss.podcast**: fix image url
+
 ## 0.3.1 (2023-08-23)
 
 ### Fix
