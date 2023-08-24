@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import logging
 import os
-import threading
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
+from inspect import isgenerator
 from tempfile import TemporaryDirectory
 from typing import Any, Iterable
 from urllib.parse import ParseResult, urlparse
@@ -20,43 +20,43 @@ from podmaker.storage import Storage
 logger = logging.getLogger(__name__)
 
 
-_lock = threading.Lock()
-
-
 class YouTube(Fetcher):
     def __init__(self, storage: Storage, owner: OwnerConfig | None):
         self.storage = storage
         self.ydl_opts = {'logger': logging.getLogger('yt_dlp')}
         self.owner = owner
 
-    def fetch(self, source: SourceConfig) -> Podcast:
-        with _lock:
-            if source.url.path == "/playlist":
-                return self.fetch_playlist(source)
-            raise ValueError(f'unsupported url: {source.url}')
-
-    def fetch_playlist(self, source: SourceConfig) -> Podcast:
-        logger.info(f'fetch playlist: {source.url}')
+    def fetch_info(self, url: str) -> dict[str, Any]:
         with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
-            playlist = ydl.extract_info(str(source.url), download=False, process=False)
-            if self.owner:
-                owner = Owner(name=self.owner.name, email=self.owner.email)
-            else:
-                owner = None
-            podcast = Podcast(
-                items=Playlist(playlist.get('entries', []), self.ydl_opts, self.storage, source),
-                link=urlparse(playlist['webpage_url']),
-                title=playlist['title'],
-                image=PlaylistThumbnail(playlist['thumbnails']),
-                description=playlist['description'],
-                owner=owner,
-                author=playlist['uploader'],
-                categories=playlist.get('tags', []),
-            )
+            info = ydl.extract_info(str(url), download=False, process=False)  # type: dict[str, Any]
+            return info
+
+    def fetch(self, source: SourceConfig) -> Podcast:
+        info = self.fetch_info(str(source.url))
+        if isgenerator(info.get('entries', None)):
+            return self.fetch_entries(info, source)
+        raise ValueError(f'unsupported url: {source.url}')
+
+    def fetch_entries(self, info: dict[str, Any], source: SourceConfig) -> Podcast:
+        logger.info(f'parse entries: {source.url}')
+        if self.owner:
+            owner = Owner(name=self.owner.name, email=self.owner.email)
+        else:
+            owner = None
+        podcast = Podcast(
+            items=Entry(info.get('entries', []), self.ydl_opts, self.storage, source),
+            link=urlparse(info['webpage_url']),
+            title=info['title'],
+            image=EntryThumbnail(info['thumbnails']),
+            description=info['description'],
+            owner=owner,
+            author=info['uploader'],
+            categories=info.get('tags', []),
+        )
         return podcast
 
 
-class Playlist(Resource[Iterable[Episode]]):
+class Entry(Resource[Iterable[Episode]]):
     def __init__(
             self, entries: Iterable[dict[str, Any]], ydl_opts: dict[str, Any], storage: Storage, source: SourceConfig):
         self.entries = entries
@@ -91,23 +91,19 @@ class Playlist(Resource[Iterable[Episode]]):
                 return None
 
 
-class PlaylistThumbnail(Resource[ParseResult]):
+class EntryThumbnail(Resource[ParseResult]):
     def __init__(self, thumbnails: list[dict[str, Any]]):
         self.thumbnails = thumbnails
 
     def get(self) -> ParseResult | None:
         if len(self.thumbnails) == 0:
             return None
-        thumbnail = max(self.thumbnails, key=lambda t: t['width'])
+        thumbnail = max(self.thumbnails, key=lambda t: t.get('width', 0))
         result: ParseResult = urlparse(thumbnail['url'])
         return result
 
 
 class Audio(Resource[Enclosure]):
-    uri: ParseResult | None = None
-    timeout = 30
-    max_retries = 3
-
     def __init__(self, info: dict[str, Any], ydl_opts: dict[str, Any], storage: Storage, source: SourceConfig):
         self.info = info
         self.ydl_opts: dict[str, Any] = {
