@@ -70,7 +70,11 @@ class Playlist(Resource[Iterable[Episode]]):
             is_empty = True
             for entry in self.entries:
                 is_empty = False
-                video_info = ydl.extract_info(entry['url'], download=False)
+                try:
+                    video_info = ydl.extract_info(entry['url'], download=False)
+                except yt_dlp.DownloadError as e:
+                    logger.error(f'failed to fetch item({entry["url"]}) due to {e}')
+                    continue
                 upload_at = datetime.strptime(video_info['upload_date'], '%Y%m%d').replace(tzinfo=timezone.utc)
                 logger.info(f'fetch item: {video_info["id"]}')
                 yield Episode(
