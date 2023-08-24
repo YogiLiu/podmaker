@@ -204,7 +204,7 @@ class Podcast(RSSSerializer, RSSDeserializer):
 
     @property
     def _image_el(self) -> Element:
-        el = self._el_creator('image', self.image.ensure().geturl())
+        el = self._el_creator('image')
         el.append(self._el_creator('link', self.link.geturl()))
         el.append(self._el_creator('title', self.title))
         el.append(self._el_creator('url', self.image.ensure().geturl()))
