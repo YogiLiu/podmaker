@@ -1,3 +1,15 @@
+## 0.7.0 (2023-08-25)
+
+### Feat
+
+- **storage**: support local storage
+
+### Fix
+
+- **cli**: support local storage
+- **rss.podcast**: fix items merge
+- **fetcher.youtube**: add source id to skip log
+
 ## 0.6.1 (2023-08-25)
 
 ### Fix
