@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import tempfile
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from inspect import isgenerator
@@ -23,7 +24,10 @@ logger = logging.getLogger(__name__)
 class YouTube(Fetcher):
     def __init__(self, storage: Storage, owner_config: OwnerConfig | None):
         self.storage = storage
-        self.ydl_opts = {'logger': logging.getLogger('yt_dlp')}
+        self.ydl_opts = {
+            'logger': logging.getLogger('yt_dlp'),
+            'cachedir': tempfile.gettempdir(),
+        }
         self.owner_config = owner_config
 
     def fetch_info(self, url: str) -> dict[str, Any]:
