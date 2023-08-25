@@ -92,6 +92,7 @@ python -m podmaker -c path/to/config.toml
 ### Resource Hosting
 
 - [x] S3
+- [x] Local
 
 ## Contributing
 
