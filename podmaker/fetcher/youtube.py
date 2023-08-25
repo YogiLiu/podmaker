@@ -21,10 +21,10 @@ logger = logging.getLogger(__name__)
 
 
 class YouTube(Fetcher):
-    def __init__(self, storage: Storage, owner: OwnerConfig | None):
+    def __init__(self, storage: Storage, owner_config: OwnerConfig | None):
         self.storage = storage
         self.ydl_opts = {'logger': logging.getLogger('yt_dlp')}
-        self.owner = owner
+        self.owner_config = owner_config
 
     def fetch_info(self, url: str) -> dict[str, Any]:
         with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
@@ -39,14 +39,14 @@ class YouTube(Fetcher):
 
     def fetch_entries(self, info: dict[str, Any], source: SourceConfig) -> Podcast:
         logger.info(f'parse entries: {source.url}')
-        if self.owner:
-            owner = Owner(name=self.owner.name, email=self.owner.email)
+        if self.owner_config:
+            owner = Owner(name=self.owner_config.name, email=self.owner_config.email)
         else:
             owner = None
         podcast = Podcast(
             items=Entry(info.get('entries', []), self.ydl_opts, self.storage, source),
             link=urlparse(info['webpage_url']),
-            title=info['title'],
+            title=source.name or info['title'],
             image=EntryThumbnail(info['thumbnails']),
             description=info['description'],
             owner=owner,
@@ -74,6 +74,9 @@ class Entry(Resource[Iterable[Episode]]):
                     video_info = ydl.extract_info(entry['url'], download=False)
                 except yt_dlp.DownloadError as e:
                     logger.error(f'failed to fetch item({entry["url"]}) due to {e}')
+                    continue
+                if self.source.regex and not self.source.regex.search(video_info['title']):
+                    logger.info(f'skip item {video_info["id"]} due to regex')
                     continue
                 upload_at = datetime.strptime(video_info['upload_date'], '%Y%m%d').replace(tzinfo=timezone.utc)
                 logger.info(f'fetch item: {video_info["id"]}')

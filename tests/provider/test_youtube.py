@@ -43,7 +43,8 @@ class TestYoutube(unittest.TestCase):
         {
             'source': SourceConfig(
                 id='youtube',
-                url='https://www.youtube.com/playlist?list=PLOU2XLYxmsILHvpAkROp2dXz-jQi4S4_y'
+                url='https://www.youtube.com/playlist?list=PLOU2XLYxmsILHvpAkROp2dXz-jQi4S4_y',
+                regex=r'Introduction to ARCore Augmented Faces, \w+'
             ),
             'attr': (
                 'Introduction to ARCore Augmented Faces',

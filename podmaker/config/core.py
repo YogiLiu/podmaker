@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import PurePath
 from typing import AnyStr, Literal, Optional
@@ -41,10 +42,20 @@ class AppConfig(BaseModel):
 class SourceConfig(BaseModel):
     id: str = Field(min_length=1, frozen=True)
     name: Optional[str] = Field(None, min_length=1, frozen=True)
+    regex: Optional[re.Pattern[str]] = Field(None, frozen=True)
     url: HttpUrl = Field(frozen=True)
 
     def get_storage_key(self, key: str) -> str:
         return f'{quote(self.id)}/{key}'
+
+    # noinspection PyNestedDecorators
+    @field_validator('regex', mode='before')
+    @classmethod
+    def regex_value(cls, v: Optional[str]) -> re.Pattern[str] | None:
+        """for tomlkit"""
+        if v is None:
+            return None
+        return re.compile(v)
 
 
 class ConfigError(Exception):

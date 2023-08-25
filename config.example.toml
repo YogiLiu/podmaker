@@ -18,12 +18,15 @@ email = "admin@podmaker.dev"
 id = "source_1"
 # the display name of the source
 name = "Source 1"
+# the regex to match the episode
+regex = "Episode \\d+"
 # the url of the source
 url = "https://example.com/source_1/"
 
 [[sources]]
 id = "source_2"
 name = "Source 2"
+regex = "Episode \\d+"
 url = "https://example.com/source_2/"
 
 [storage]

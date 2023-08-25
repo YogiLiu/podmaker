@@ -6,10 +6,10 @@ from pydantic import BaseModel, Field, HttpUrl, field_validator
 SupportedStorage = Literal['s3']
 
 
-# noinspection PyNestedDecorators
 class StorageConfig(BaseModel, metaclass=ABCMeta):
     dest: SupportedStorage = Field(min_length=1, frozen=True)
 
+    # noinspection PyNestedDecorators
     @field_validator('dest', mode='before')
     @classmethod
     def dest_value(cls, v: AnyStr) -> str:
