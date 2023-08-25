@@ -1,3 +1,11 @@
+## 0.5.0 (2023-08-25)
+
+### Feat
+
+- **storage**: support start and stop storage
+- **config**: support filter episodes by regex
+- **config**: use storage instead s3
+
 ## 0.4.0 (2023-08-24)
 
 ### Feat
