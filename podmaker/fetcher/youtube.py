@@ -80,7 +80,7 @@ class Entry(Resource[Iterable[Episode]]):
                     logger.error(f'[{self.source.id}] failed to fetch item({entry["url"]}) due to {e}')
                     continue
                 if self.source.regex and not self.source.regex.search(video_info['title']):
-                    logger.info(f'skip item {video_info["id"]} due to regex')
+                    logger.info(f'[{self.source.id}] skip item {video_info["id"]} due to regex')
                     continue
                 upload_at = datetime.strptime(video_info['upload_date'], '%Y%m%d').replace(tzinfo=timezone.utc)
                 logger.info(f'[{self.source.id}] fetch item: {video_info["id"]}')
