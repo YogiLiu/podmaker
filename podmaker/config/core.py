@@ -7,6 +7,8 @@ from urllib.parse import quote
 
 from pydantic import BaseModel, EmailStr, Field, HttpUrl, ValidationError, field_validator
 
+from podmaker.config.storage import S3Config
+
 if sys.version_info >= (3, 11):
     import tomllib as toml
 else:
@@ -36,16 +38,9 @@ class AppConfig(BaseModel):
         return str(v)
 
 
-class S3Config(BaseModel):
-    access_key: str = Field(min_length=1, frozen=True)
-    access_secret: str = Field(min_length=1, frozen=True)
-    bucket: str = Field(min_length=1, frozen=True)
-    endpoint: HttpUrl = Field(frozen=True)
-    public_endpoint: HttpUrl = Field(frozen=True)
-
-
 class SourceConfig(BaseModel):
     id: str = Field(min_length=1, frozen=True)
+    name: Optional[str] = Field(None, min_length=1, frozen=True)
     url: HttpUrl = Field(frozen=True)
 
     def get_storage_key(self, key: str) -> str:
@@ -58,7 +53,7 @@ class ConfigError(Exception):
 
 class PMConfig(BaseModel):
     owner: Optional[OwnerConfig] = Field(None, frozen=True)
-    s3: S3Config = Field(frozen=True)
+    storage: S3Config = Field(frozen=True)
     sources: tuple[SourceConfig, ...] = Field(frozen=True)
     app: AppConfig = Field(default_factory=AppConfig, frozen=True)
 

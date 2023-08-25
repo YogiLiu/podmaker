@@ -12,21 +12,26 @@ loglevel = "INFO"
 name = "podmaker"
 email = "admin@podmaker.dev"
 
-[s3]
+# notice: the sources is an array, it must specify using `[[]]`
+[[sources]]
+# used to generate the feed url, must be unique, prefer to use numbers, letters, space and underscores
+id = "source_1"
+# the display name of the source
+name = "Source 1"
+# the url of the source
+url = "https://example.com/source_1/"
+
+[[sources]]
+id = "source_2"
+name = "Source 2"
+url = "https://example.com/source_2/"
+
+[storage]
+# destination of the generated feed, only support "s3" now
+dest = "s3"
 access_key = "123"
 access_secret = "456"
 bucket = "podmake"
 endpoint = "https://s3.amazonaws.com/"
 # must be public-read
 public_endpoint = "https://s3.amazonaws.com/"
-
-# notice: the sources is an array, it must specify using `[[]]`
-[[sources]]
-# used to generate the feed url, must be unique, prefer to use numbers, letters, space and underscores
-id = "source_1"
-# the url of the source
-url = "https://example.com/source_1/"
-
-[[sources]]
-id = "source_2"
-url = "https://example.com/source_2/"

@@ -50,6 +50,7 @@ class TestS3(unittest.TestCase):
     def setUp(self) -> None:
         self.s3 = S3(
             S3Config(
+                dest='s3',
                 access_key='123',
                 access_secret='456',
                 bucket='podmaker',

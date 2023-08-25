@@ -28,7 +28,10 @@ def run() -> None:
         level=config.app.loglevel,
         format='%(asctime)s %(levelname)s %(name)s %(message)s',
     )
-    storage = S3(config.s3)
+    if config.storage.dest == 's3':
+        storage = S3(config.storage)
+    else:
+        raise ValueError(f'unknown storage destination: {config.storage.dest}')
     logger.info(f'running in {config.app.mode} mode')
     processor: Processor
     if config.app.mode == 'watch':
