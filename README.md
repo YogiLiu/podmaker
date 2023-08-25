@@ -86,7 +86,7 @@ python -m podmaker -c path/to/config.toml
 
 - [x] YouTube
     - [x] Playlist
-    - [ ] Channel
+    - [x] Channel
 - [ ] BiliBili
 
 ### Resource Hosting
