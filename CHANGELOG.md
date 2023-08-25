@@ -1,3 +1,9 @@
+## 0.6.0 (2023-08-25)
+
+### Feat
+
+- **fetcher.youtube**: add source id to log
+
 ## 0.5.0 (2023-08-25)
 
 ### Feat
