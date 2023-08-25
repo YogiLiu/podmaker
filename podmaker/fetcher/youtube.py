@@ -38,7 +38,7 @@ class YouTube(Fetcher):
         raise ValueError(f'unsupported url: {source.url}')
 
     def fetch_entries(self, info: dict[str, Any], source: SourceConfig) -> Podcast:
-        logger.info(f'parse entries: {source.url}')
+        logger.info(f'[{source.id}] parse entries: {source.url}')
         if self.owner_config:
             owner = Owner(name=self.owner_config.name, email=self.owner_config.email)
         else:
@@ -65,7 +65,7 @@ class Entry(Resource[Iterable[Episode]]):
         self.source = source
 
     def get(self) -> Iterable[Episode] | None:
-        logger.debug('fetch items')
+        logger.debug(f'[{self.source.id}] fetch items')
         with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
             is_empty = True
             for entry in self.entries:
@@ -73,13 +73,13 @@ class Entry(Resource[Iterable[Episode]]):
                 try:
                     video_info = ydl.extract_info(entry['url'], download=False)
                 except yt_dlp.DownloadError as e:
-                    logger.error(f'failed to fetch item({entry["url"]}) due to {e}')
+                    logger.error(f'[{self.source.id}] failed to fetch item({entry["url"]}) due to {e}')
                     continue
                 if self.source.regex and not self.source.regex.search(video_info['title']):
                     logger.info(f'skip item {video_info["id"]} due to regex')
                     continue
                 upload_at = datetime.strptime(video_info['upload_date'], '%Y%m%d').replace(tzinfo=timezone.utc)
-                logger.info(f'fetch item: {video_info["id"]}')
+                logger.info(f'[{self.source.id}] fetch item: {video_info["id"]}')
                 yield Episode(
                     enclosure=Audio(video_info, self.ydl_opts, self.storage, self.source),
                     title=video_info['title'],
@@ -121,27 +121,27 @@ class Audio(Resource[Enclosure]):
         self.source = source
 
     def upload(self, key: str) -> tuple[ParseResult, int]:
-        logger.debug(f'upload audio: {key}')
+        logger.debug(f'[{self.source.id}] upload audio: {key}')
         with TemporaryDirectory(prefix='podmaker_youtube_') as cache_dir:
             opts = {'paths': {'home': cache_dir}}
             opts.update(self.ydl_opts)
             with yt_dlp.YoutubeDL(opts) as ydl:
-                logger.info(f'fetch audio: {self.info["id"]}')
+                logger.info(f'[{self.source.id}] fetch audio: {self.info["id"]}')
                 downloaded_info = ydl.extract_info(self.info['webpage_url'])
                 audio_path = downloaded_info['requested_downloads'][0]['filepath']
                 length = os.path.getsize(audio_path)
             with open(audio_path, 'rb') as f:
-                logger.info(f'upload audio: {key}')
+                logger.info(f'[{self.source.id}] upload audio: {key}')
                 url = self.storage.put(f, key=key, content_type='audio/mp3')
         return url, length
 
     @lru_cache(maxsize=1)
     def get(self) -> Enclosure | None:
-        logger.debug(f'fetch audio: {self.info["id"]}')
+        logger.debug(f'[{self.source.id}] fetch audio: {self.info["id"]}')
         key = self.source.get_storage_key(f'youtube/{self.info["id"]}.mp3')
         info = self.storage.check(key)
         if info:
-            logger.info(f'audio already exists: {key}')
+            logger.info(f'[{self.source.id}] audio already exists: {key}')
             url = info.uri
             length = info.size
         else:
