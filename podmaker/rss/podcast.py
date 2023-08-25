@@ -121,11 +121,15 @@ class Podcast(RSSSerializer, RSSDeserializer):
 
     def _merge_items(self, others: Resource[Iterable[Episode]]) -> bool:
         new_items = []
-        old_ids = set(i.unique_id for i in self.items.ensure())
+        has_changed = False
+        old_ids = {i.unique_id: i for i in self.items.ensure()}
         for item in others.ensure():
             if item.unique_id not in old_ids:
                 new_items.append(item)
-        if not new_items:
+            else:
+                old_item = old_ids[item.unique_id]
+                has_changed = old_item.merge(item) or has_changed
+        if not new_items and not has_changed:
             return False
         sorted_items = sorted(
             list(self.items.ensure()) + new_items,
