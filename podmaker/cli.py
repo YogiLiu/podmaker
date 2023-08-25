@@ -30,6 +30,7 @@ def run() -> None:
     )
     if config.storage.dest == 's3':
         storage = S3(config.storage)
+        storage.start()
     else:
         raise ValueError(f'unknown storage destination: {config.storage.dest}')
     logger.info(f'running in {config.app.mode} mode')
@@ -39,4 +40,8 @@ def run() -> None:
     else:
         processor = Processor(config=config, storage=storage)
     exit_signal.listen()
-    processor.run()
+    try:
+        processor.run()
+    except BaseException:
+        storage.stop()
+        raise

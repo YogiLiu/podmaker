@@ -40,3 +40,9 @@ class Storage(ABC):
         :return: file-like object, return `EMPTY_FILE` if not found
         """
         raise NotImplementedError
+
+    def start(self) -> None:
+        pass
+
+    def stop(self) -> None:
+        pass
