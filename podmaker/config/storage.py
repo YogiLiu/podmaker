@@ -1,9 +1,10 @@
 from abc import ABCMeta
+from pathlib import PurePath
 from typing import AnyStr, Literal
 
 from pydantic import BaseModel, Field, HttpUrl, field_validator
 
-SupportedStorage = Literal['s3']
+SupportedStorage = Literal['s3', 'local']
 
 
 class StorageConfig(BaseModel, metaclass=ABCMeta):
@@ -24,3 +25,16 @@ class S3Config(StorageConfig):
     bucket: str = Field(min_length=1, frozen=True)
     endpoint: HttpUrl = Field(frozen=True)
     public_endpoint: HttpUrl = Field(frozen=True)
+
+
+class LocalConfig(StorageConfig):
+    dest: Literal['local'] = Field(frozen=True)
+    base_dir: PurePath = Field(min_length=1, frozen=True)
+    public_endpoint: HttpUrl = Field(frozen=True)
+
+    # noinspection PyNestedDecorators
+    @field_validator('base_dir', mode='before')
+    @classmethod
+    def dest_value(cls, v: str) -> PurePath:
+        """for tomlkit"""
+        return PurePath(v)

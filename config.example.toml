@@ -29,12 +29,22 @@ name = "Source 2"
 regex = "Episode \\d+"
 url = "https://example.com/source_2/"
 
+# only one is allowed to be specified
 [storage]
-# destination of the generated feed, only support "s3" now
-dest = "s3"
-access_key = "123"
-access_secret = "456"
-bucket = "podmake"
-endpoint = "https://s3.amazonaws.com/"
-# must be public-read
-public_endpoint = "https://s3.amazonaws.com/"
+# destination of the generated feed
+dest = "file"
+# the directory to store the generated feed, your must change it
+# the files will save to $base_dir/data/, and the feed will save to $base_dir/data/feed.xml
+# you can use nginx to serve the $base_dir/data/
+# !!WARNING!! don't serve the $base_dir/ directly, it may leak your config file
+base_dir = "/path/to/storage"
+# must be public-read, this endpoint should be pointed to $base_dir/data/
+public_endpoint = "https://example.com"
+
+#[storage]
+#dest = "s3"
+#access_key = "123"
+#access_secret = "456"
+#bucket = "podmake"
+#endpoint = "https://s3.amazonaws.com/"
+#public_endpoint = "https://s3.amazonaws.com/"
