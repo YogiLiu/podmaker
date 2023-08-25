@@ -11,7 +11,7 @@ repository = "https://github.com/YogiLiu/podmaker"
 documentation = "https://github.com/YogiLiu/podmaker/blob/main/README.md"
 keywords = ["rss", "youtube", "podcast"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Environment :: Console"
 ]
 
