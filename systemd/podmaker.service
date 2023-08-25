@@ -5,6 +5,7 @@ After=network.target network-online.target
 Wants=network-online.target
 
 [Service]
+User=nobody
 Type=simple
 ExecStart=/opt/podmaker/venv/bin/podmaker -c /opt/podmaker/config.toml
 
