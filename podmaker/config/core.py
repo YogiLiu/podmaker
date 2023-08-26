@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 import sys
 from pathlib import PurePath
-from typing import AnyStr, Literal, Optional
+from typing import AnyStr, Literal, Optional, Union
 from urllib.parse import quote
 
 from pydantic import BaseModel, EmailStr, Field, HttpUrl, ValidationError, field_validator
@@ -64,7 +64,7 @@ class ConfigError(Exception):
 
 class PMConfig(BaseModel):
     owner: Optional[OwnerConfig] = Field(None, frozen=True)
-    storage: S3Config | LocalConfig = Field(frozen=True)
+    storage: Union[S3Config, LocalConfig] = Field(frozen=True)
     sources: tuple[SourceConfig, ...] = Field(frozen=True)
     app: AppConfig = Field(default_factory=AppConfig, frozen=True)
 
