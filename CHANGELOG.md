@@ -1,3 +1,9 @@
+## 0.7.1 (2023-08-26)
+
+### Fix
+
+- **config.storage**: remove absmeta
+
 ## 0.7.0 (2023-08-25)
 
 ### Feat
