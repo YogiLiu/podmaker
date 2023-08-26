@@ -1,4 +1,3 @@
-from abc import ABCMeta
 from pathlib import PurePath
 from typing import AnyStr, Literal
 
@@ -7,7 +6,7 @@ from pydantic import BaseModel, Field, HttpUrl, field_validator
 SupportedStorage = Literal['s3', 'local']
 
 
-class StorageConfig(BaseModel, metaclass=ABCMeta):
+class StorageConfig(BaseModel):
     dest: SupportedStorage = Field(min_length=1, frozen=True)
 
     # noinspection PyNestedDecorators
