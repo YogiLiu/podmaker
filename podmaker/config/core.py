@@ -3,10 +3,10 @@ from __future__ import annotations
 import re
 import sys
 from pathlib import PurePath
-from typing import AnyStr, Literal, Optional, Union
+from typing import Literal, Optional, Union
 from urllib.parse import quote
 
-from pydantic import BaseModel, EmailStr, Field, HttpUrl, ValidationError, field_validator
+from pydantic import BaseModel, EmailStr, Field, HttpUrl, ValidationError
 
 from podmaker.config.storage import LocalConfig, S3Config
 
@@ -26,18 +26,6 @@ class AppConfig(BaseModel):
     mode: Literal['oneshot', 'watch'] = Field('oneshot', frozen=True)
     loglevel: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR'] = Field('INFO', frozen=True)
 
-    @field_validator('mode', mode='before')
-    @classmethod
-    def mode_value(cls, v: AnyStr) -> str:
-        """for tomlkit"""
-        return str(v)
-
-    @field_validator('loglevel', mode='before')
-    @classmethod
-    def loglevel_value(cls, v: AnyStr) -> str:
-        """for tomlkit"""
-        return str(v)
-
 
 class SourceConfig(BaseModel):
     id: str = Field(min_length=1, frozen=True)
@@ -47,15 +35,6 @@ class SourceConfig(BaseModel):
 
     def get_storage_key(self, key: str) -> str:
         return f'{quote(self.id)}/{key}'
-
-    # noinspection PyNestedDecorators
-    @field_validator('regex', mode='before')
-    @classmethod
-    def regex_value(cls, v: Optional[str]) -> re.Pattern[str] | None:
-        """for tomlkit"""
-        if v is None:
-            return None
-        return re.compile(v)
 
 
 class ConfigError(Exception):
@@ -72,7 +51,12 @@ class PMConfig(BaseModel):
     def from_file(cls, path: PurePath) -> PMConfig:
         try:
             with open(path, 'rb') as f:
-                data = toml.load(f)
+                doc = toml.load(f)
+                # https://github.com/sdispater/tomlkit/issues/275
+                if getattr(doc, 'unwrap', None):
+                    data = doc.unwrap()
+                else:
+                    data = doc
         except FileNotFoundError as e:
             raise ConfigError(f'config file not found: {path}') from e
         try:
