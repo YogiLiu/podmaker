@@ -17,6 +17,7 @@ from podmaker.fetcher import Fetcher
 from podmaker.rss import Enclosure, Episode, Owner, Podcast, Resource
 from podmaker.rss.core import PlainResource
 from podmaker.storage import Storage
+from podmaker.util import exit_signal
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +74,7 @@ class Entry(Resource[Iterable[Episode]]):
         with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
             is_empty = True
             for entry in self.entries:
+                exit_signal.check()
                 is_empty = False
                 try:
                     video_info = ydl.extract_info(entry['url'], download=False)
