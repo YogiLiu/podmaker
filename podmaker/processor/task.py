@@ -6,14 +6,12 @@ from typing import Any, Callable
 from uuid import uuid4
 
 from podmaker.config import OwnerConfig, SourceConfig
-from podmaker.fetcher import Fetcher, YouTube
+from podmaker.fetcher import Fetcher
 from podmaker.rss import Podcast
 from podmaker.storage import EMPTY_FILE, Storage
 from podmaker.util import ExitSignalError
 
 logger = logging.getLogger(__name__)
-
-_fetcher_instances: dict[str, Fetcher] = {}
 
 Hook = Callable[[str], None]
 
@@ -23,27 +21,19 @@ def _do_nothing(*_: Any) -> None:
 
 
 class Task:
-    def __init__(self, source: SourceConfig, storage: Storage, owner: OwnerConfig | None):
+    def __init__(self, fetcher: Fetcher, source: SourceConfig, storage: Storage, owner: OwnerConfig | None):
         self._id = uuid4().hex
         logger.info(f'create task {self._id} for {source.id}')
         self._source = source
         self._storage = storage
         self._owner = owner
-        self._fetcher = self._get_fetcher()
+        self._fetcher = fetcher
         self.before: Hook = _do_nothing
         self.after: Hook = _do_nothing
 
     @property
     def id(self) -> str:
         return self._id
-
-    def _get_fetcher(self) -> Fetcher:
-        if self._source.url.host not in _fetcher_instances:
-            if self._source.url.host == 'www.youtube.com':
-                _fetcher_instances[self._source.url.host] = YouTube(self._storage, self._owner)
-            else:
-                raise ValueError(f'unsupported url: {self._source.url}')
-        return _fetcher_instances[self._source.url.host]
 
     def _fetch_original(self, key: str) -> Podcast | None:
         with self._storage.get(key) as xml_file:
