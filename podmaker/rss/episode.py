@@ -129,8 +129,10 @@ class Episode(RSSComponent):
             return None
         try:
             dt = parsedate_to_datetime(pub_date_str)
-        except ValueError:
+        except (TypeError, ValueError):
             try:
+                if pub_date_str.endswith('Z'):
+                    pub_date_str = pub_date_str[:-1] + '+00:00'
                 dt = datetime.fromisoformat(pub_date_str)
             except ValueError:
                 logger.warning(f'invalid pubDate: {pub_date_str}')

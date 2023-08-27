@@ -135,6 +135,8 @@ class TestRSS(unittest.TestCase):
                     try:
                         dt = parsedate_to_datetime(pub_date)
                     except (TypeError, ValueError):
+                        if pub_date.endswith('Z'):
+                            pub_date = pub_date[:-1] + '+00:00'
                         dt = datetime.fromisoformat(pub_date)
                     self.assertEqual(dt.date(), item.pub_date.date())  # type: ignore[union-attr]
                     self.assertEqual(dt.time(), item.pub_date.time())  # type: ignore[union-attr]
