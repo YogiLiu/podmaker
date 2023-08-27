@@ -1,3 +1,10 @@
+## 0.7.4 (2023-08-27)
+
+### Fix
+
+- **rss.podcast**: fix pu_bdate format
+- **fetcher.processor**: check exit signal
+
 ## 0.7.3 (2023-08-26)
 
 ### Fix
