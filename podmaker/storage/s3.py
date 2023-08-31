@@ -1,21 +1,28 @@
 from __future__ import annotations
 
+__all__ = ['S3']
+
 import base64
 import hashlib
 import logging
+import sys
 from contextlib import contextmanager
 from tempfile import SpooledTemporaryFile
 from typing import IO, AnyStr, Iterator
 from urllib.parse import ParseResult, urljoin, urlparse
-
-import boto3
-from botocore.exceptions import ClientError
 
 from podmaker.config import S3Config
 from podmaker.storage import ObjectInfo, Storage
 from podmaker.storage.core import EMPTY_FILE
 
 logger = logging.getLogger(__name__)
+
+try:
+    import boto3
+    from botocore.exceptions import ClientError
+except ImportError:
+    logger.error('boto3 is not installed, S3 storage is not available')
+    sys.exit(1)
 
 
 class S3(Storage):

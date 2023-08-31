@@ -4,7 +4,7 @@ from io import BytesIO
 from pathlib import Path
 
 from podmaker.config import LocalConfig
-from podmaker.storage import Local
+from podmaker.storage.local import Local
 
 file_size = 10
 

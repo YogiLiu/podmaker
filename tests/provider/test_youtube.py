@@ -7,7 +7,7 @@ from typing import IO, Any, AnyStr
 from urllib.parse import ParseResult, urlparse
 
 from podmaker.config import OwnerConfig, SourceConfig
-from podmaker.fetcher import YouTube
+from podmaker.fetcher.youtube import YouTube
 from podmaker.storage import ObjectInfo, Storage
 from tests.helper import network_available
 

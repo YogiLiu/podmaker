@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+__all__ = ['YouTube']
+
 import logging
 import os
+import sys
 import tempfile
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
@@ -9,8 +12,6 @@ from inspect import isgenerator
 from tempfile import TemporaryDirectory
 from typing import Any, Iterable
 from urllib.parse import ParseResult, urlparse
-
-import yt_dlp
 
 from podmaker.config import OwnerConfig, SourceConfig
 from podmaker.fetcher import Fetcher
@@ -20,6 +21,12 @@ from podmaker.storage import Storage
 from podmaker.util import exit_signal
 
 logger = logging.getLogger(__name__)
+
+try:
+    import yt_dlp
+except ImportError:
+    logger.error('yt_dlp is not installed. youtube fetcher is not available.')
+    sys.exit(1)
 
 
 class YouTube(Fetcher):

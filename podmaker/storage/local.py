@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+__all__ = ['Local']
+
 import logging
 import sqlite3
 import threading

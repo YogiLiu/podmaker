@@ -10,7 +10,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 from podmaker.config import S3Config
-from podmaker.storage import S3
+from podmaker.storage.s3 import S3
 
 file_size = 10
 

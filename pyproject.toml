@@ -17,11 +17,16 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-boto3 = "^1.28.27"
-yt-dlp = "^2023.7.6"
 tomlkit = "^0.12.1"
 pydantic = {extras = ["email"], version = "^2.2.0"}
 apscheduler = "^3.10.4"
+boto3 = { version = "^1.28.27", optional = true }
+yt-dlp = { version = "^2023.7.6", optional = true }
+
+[tool.poetry.extras]
+s2 = ["boto3"]
+youtube = ["yt-dlp"]
+all = ["boto3", "yt-dlp"]
 
 [tool.poetry.group.dev.dependencies]
 boto3-stubs = { extras = ["essential"], version = "^1.28.27" }

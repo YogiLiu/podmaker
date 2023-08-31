@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from typing import Any, Iterator
 
 from podmaker.config import PMConfig, SourceConfig
-from podmaker.fetcher import Fetcher, YouTube
+from podmaker.fetcher import Fetcher
 from podmaker.processor.task import Task
 from podmaker.storage import Storage
 from podmaker.util import exit_signal
@@ -34,6 +34,7 @@ class Processor:
     def _get_fetcher(self, source: SourceConfig) -> Fetcher:
         if source.url.host not in self._fetcher_instances:
             if source.url.host == 'www.youtube.com':
+                from podmaker.fetcher.youtube import YouTube
                 self._fetcher_instances[source.url.host] = YouTube(self._storage, self._config.owner)
             else:
                 raise ValueError(f'unsupported host: {source.url.host}')
