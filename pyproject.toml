@@ -24,7 +24,7 @@ boto3 = { version = "^1.28.27", optional = true }
 yt-dlp = { version = "^2023.7.6", optional = true }
 
 [tool.poetry.extras]
-s2 = ["boto3"]
+s3 = ["boto3"]
 youtube = ["yt-dlp"]
 all = ["boto3", "yt-dlp"]
 
