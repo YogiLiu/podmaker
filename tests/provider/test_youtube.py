@@ -9,7 +9,7 @@ from urllib.parse import ParseResult, urlparse
 from podmaker.config import OwnerConfig, SourceConfig
 from podmaker.fetcher import YouTube
 from podmaker.storage import ObjectInfo, Storage
-from tests.util import network_available
+from tests.helper import network_available
 
 if sys.version_info >= (3, 11):
     pass
