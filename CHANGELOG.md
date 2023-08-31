@@ -1,3 +1,19 @@
+## 0.8.0 (2023-09-01)
+
+### BREAKING CHANGE
+
+- Should install yt_dlp and boto3 by extra dependencies.
+
+### Feat
+
+- **fetcher,storage**: make yt_dlp and boto3 optional
+- **util**: add retry decorator
+- **fetcher.core,processor**: add start and stop hook to fetcher
+
+### Fix
+
+- **util**: rename retry module to retry_util
+
 ## 0.7.4 (2023-08-27)
 
 ### Fix
