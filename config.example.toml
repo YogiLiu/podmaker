@@ -16,18 +16,21 @@ email = "admin@podmaker.dev"
 [[sources]]
 # used to generate the feed url, must be unique, prefer to use numbers, letters, space and underscores
 id = "source_1"
-# the display name of the source
+# optional, the display name of the source
 name = "Source 1"
-# the regex to match the episode
+# optional, the regex to match the episode
 regex = "Episode \\d+"
 # the url of the source
 url = "https://example.com/source_1/"
+# optional, the interval to check the source, in seconds, default to 3600
+interval = 3600
 
 [[sources]]
 id = "source_2"
 name = "Source 2"
 regex = "Episode \\d+"
 url = "https://example.com/source_2/"
+interval = 3600
 
 # only one is allowed to be specified
 [storage]

@@ -35,6 +35,10 @@ class Task:
     def id(self) -> str:
         return self._id
 
+    @property
+    def interval(self) -> int:
+        return self._source.interval
+
     def _fetch_original(self, key: str) -> Podcast | None:
         with self._storage.get(key) as xml_file:
             if xml_file == EMPTY_FILE:

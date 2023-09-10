@@ -32,6 +32,7 @@ class SourceConfig(BaseModel):
     name: Optional[str] = Field(None, min_length=1, frozen=True)
     regex: Optional[re.Pattern[str]] = Field(None, frozen=True)
     url: HttpUrl = Field(frozen=True)
+    interval: int = Field(1 * 60 * 60, ge=1, frozen=True)
 
     def get_storage_key(self, key: str) -> str:
         return f'{quote(self.id)}/{key}'

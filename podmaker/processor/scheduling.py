@@ -41,7 +41,7 @@ class ScheduleProcessor(Processor):
                 task.after = self._after_hook
                 self._scheduler.add_job(
                     func=task.execute,
-                    trigger=IntervalTrigger(hours=1),
+                    trigger=IntervalTrigger(seconds=task.interval),
                     next_run_time=datetime.now(),
                     id=task.id,
                     name=f'Job-{task.id}',
