@@ -1,3 +1,9 @@
+## 0.9.0 (2023-09-11)
+
+### Feat
+
+- **prrocessor.scheduling**: support custom interval
+
 ## 0.8.1 (2023-09-01)
 
 ### Fix
