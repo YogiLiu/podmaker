@@ -1,5 +1,7 @@
 # Podmaker
 
+*Read this document in other languages: [English](README.md), [简体中文](README.zh_CN.md)*
+
 Convert online media into podcast feeds.
 
 ![PyPI - Version](https://img.shields.io/pypi/v/podmaker)
@@ -45,14 +47,18 @@ Deploy this tool in the background with systemd (requires root privileges):
 apt install python3 python3-venv
 mkdir -p /opt/podmaker && cd /opt/podmaker
 python3 -m venv venv
+
 # install podmaker
 ./venv/bin/pip install "podmaker[all]"
+
 # create and edit config file
 curl -o config.toml https://raw.githubusercontent.com/YogiLiu/podmaker/main/config.example.toml
 vim config.toml
+
 # create systemd service
 curl -o /etc/systemd/system/podmaker.service https://raw.githubusercontent.com/YogiLiu/podmaker/main/systemd/podmaker.service
 systemctl daemon-reload
+
 # enable and start service
 systemctl enable podmaker
 systemctl start podmaker
